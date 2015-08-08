@@ -1,0 +1,467 @@
+---
+title: "Thurstone Skalierung"
+author: "Mark Heckmann"
+date: "29. January 2013"
+output: 
+  html_document:
+    theme: united
+    toc: yes
+    toc_depth: 3
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(car)
+library(reshape2)
+library(ggplot2)
+library(knitr)
+opts_chunk$set(comment="")
+```
+
+
+## Methode des paarweisen Vergleichs (Law of Comparative Judgement [LCJ])
+
+Eine gute Einführung in die Thurstone-Skalierung bietet Gerich (2010). Die genutzten Beispiele enstammen diesem Buchkapitel.
+
+```{r echo=FALSE, results='hide'}
+m <- matrix(c(.5, .07, .76, .0, .1, .79, 1.0,
+         .93, .5, 1.0, .21, .65, .97, .97,
+         .24, .0, .5, .03, .03, .41, .93,
+        1.0, .79, .97, .5, .93, 1.0, 1.0,
+         .9, .35, .97, .07, .5, .93, 1.0,
+         .21, .03, .59, .0, .07, .5, .97,
+         .0, .03, .07, .0, .0, .03, .5), ncol=7, byrow=T)
+nms <- c("Alkohol", "Ecstasy", "Hanf", "Heroin", "Kokain", "Nikotin", "Kaffee")
+colnames(m) <- nms
+rownames(m) <- nms
+m
+```
+
+Zwei Objekte $i$ und $j$ werden beurteilt. Der Urteiler urteilt nicht jedes Mal exakt. Die Urteile variieren um die wahren Skalenwerte $s_i$ und $s_j$.
+
+```{r echo=FALSE, fig.height=4}
+n <- 1e4
+s.i <- 1
+s.j <- 2.5
+s.i.sd <- .5
+s.j.sd <- .5
+i <- rnorm(n, mean=s.i, sd=s.i.sd)
+j <- rnorm(n, mean=s.j, sd=s.j.sd)
+d <- i - j
+hist(i, breaks=50, prob=T, xlim=range(i,j), xlab="Urteilsdimension", 
+     ylab="", col=NA, border="blue", main="Beurteilung von zwei Objekte")
+hist(j, breaks=50, prob=T, add=T, col=NA, border="red")
+curve(dnorm(x, mean=mean(i), sd=sd(i)), add=TRUE, col="blue") 
+curve(dnorm(x, mean=mean(j), sd=sd(j)), add=TRUE, col="red") 
+abline(v=c(s.i, s.j), col=c("blue", "red"), lwd=3)
+mtext("s_i", 1, line=1.7, at=s.i, col="blue")
+mtext("s_j", 1, line=1.7, at=s.j, col="red")
+```
+
+In dem Bild gilt die Beziehung $s_i > s_j$. Das Objekt $i$ hat auf der Urteilsdimension einen geringeren wahren Wert als das Objekt $j$. Die Beurteilung des Objektes enthält jedoch ein zufällige Fehlerkomponente. Die realen $i$ und $j$ Werte schwanken normalverteilt um den die wahren Werte $s_i$ und $s_j$. Wie wahrscheinlich ist es nun, dass sich bei der Beurteilung, bedingt durch den zufälligen Fehler, die Reihenfolge der Objekte auf der Dimension umkehrt? Hierzu wird die Verteilung der Differenzen der Urteile betrachtet. Die Differenz sei $d=s_i > s_j$. Die Verteilung der Differenzen ist nachfolgend dargestellt. 
+
+```{r echo=FALSE, fig.height=4, warning=FALSE}
+h <- hist(d, breaks=50, prob=T)
+cols <- recode(h$mids, "lo:0=NA; else='red'")
+h <- hist(d, breaks=50, prob=T, border=cols, col=cols, add=T)
+curve(dnorm(x, mean=mean(d), sd=sd(d)), add=TRUE, col="blue") 
+abline(v=s.i-s.j, col="red", lwd=2)
+#sd.d <- ( sd(i)^2 + sd(j)^2 - cor(i, j) * sd(i)* sd(j) )^.5
+```
+
+Der Erwartungswert (die wahre Differenz zwischen den Objekten) entspricht 
+$s_i - s_j=$ `r s.i - s.j`. 
+Die Streuung der Differenzen ist: 
+$\sigma_{ij} = \sqrt{\sigma_i^2 + \sigma_j^2 -2r_{ij}\sigma_i \sigma_j}$.
+
+Standardisierung der Differenzen:
+$z_{ij}
+  =\frac{0-(s_i-s_j)}{\sigma_{ij}}
+  =\frac{s_j - s_i}{\sigma_{ij}}$.
+
+Annahmen:
+
+* Die Urteile streuen bei jedem Objekt im gleichen Ausmaß um den wahren Wert, d.h. die Streuungen sind identisch: 
+$\sigma_i^2 = \sigma_j^2$
+* Die Korrelation der Urteile zwischen den Objekten ist konstant: 
+$r_{ij} =r_{ik}$
+
+Unter Einbeziehung der Annahmen vereinfacht sich die Streuung der Urteilsdifferenzen zu
+$z_{ij}
+=\frac{s_j - s_i}{\sigma^2 + \sigma^2 - 2r\sigma^2}
+=\frac{s_j - s_i}{2\sigma^2 (1-r)}$.
+
+Es zeigt sich, dass der Nenner für alle Paarvergleiche einen konstanten Wert annimmt. D.h. es handelt sich stetS um die gleiche konstante lineare Transformation für jeden Paarvergleich. Aus diesem Grund kann der Nenner ohne Informationsverlust durch einen beliebigen anderen konstanten Wert ersetzt werden, z.B. den Wert $1$. Zwar ändert sich hierbei der absolute Wert, nicht jedoch die Relationen der Werte. Diese von Thurstone eingeführte Vereinfachung wird als *CASE V* bezeichnet. In Folge vereinfacht sich die Differenz der Urteile zu
+$z{ij} = s_j - s_i$
+
+### Vorgehensweise
+
+Gegeben sei folgende Auszählung an der Dominanzurteile.
+Das Spaltenmerkmal dominiert das Zeilenmerkmal.
+
+```{r echo=FALSE}
+P <- m
+P * 100
+```
+
+Es werden nun für jeden Vergleich die relative Häufigkeit für das Auftreten des 
+Dominanzurteils berechnet.
+
+```{r echo=FALSE}
+P
+```
+
+Die relativen Häufigkeiten werden nun in die zugehörigen z-Werte umgewandelt.
+Die P-Werte $0$ und $1$ Werte haben als korrespondierende z-Werte -/+ Inf. 
+Aus diesem Grund werden diese Werte hier mit $.01$ bzw. $.99$ substituiert, 
+um nutzbare z-Werte zu erhalten.
+
+```{r echo=FALSE}
+z <- P
+z[z == 0] <- .01 
+z[z == 1] <- .99
+z <- t(apply(z, 1, qnorm))
+#mz <- mz[, -ncol(mz)]
+round(z, 2)
+```
+
+Die z-Werte werden nun zeilenweise gemittelt (Spalte z.mean).
+Anschließend wird der Nullpunkt der Skala auf den kleinsten Wert gesetzt, 
+d.h. der kleinste Wert wird abgezogen (Spalte s.i). Diese Werte bilden die $s_i$, 
+d.h. die Werte der Objekte auf dem Beurteilungskontinuum.
+
+```{r echo=FALSE}
+z.mean <- rowMeans(z)
+s.i <- z.mean - min(z.mean)
+res <- cbind(z.mean, s.i)
+round(res, 2)
+```
+
+Kaffee wird als am ungefährlichsten, Heroin als am gefährlichsten eingestuft.
+Der Unterschied zwischen Kaffee und Alkohol (`r round(abs(z.mean[1] - z.mean[7]), 2)`) entspricht in etwa dem von Alkohol und Heroin (`r round(abs(z.mean[1] - z.mean[4]), 2)`).
+
+
+**Rekonstruktion der P-Werte**
+
+Im Folgenden werden die P-Werte aus den Skalenwerten rekonstruiert. Dies dient dazu, die Güte der Reproduktion zu beurteilen.
+
+Für jedes Stimuluspaar wird die Differenz der $s_i$ Werte berechnet. Dies entspricht den rekonstruierten z-Werten $z'$.
+
+```{r echo=FALSE}
+z.repro <- z.mean - t(replicate(length(z.mean), z.mean))
+rownames(z.repro) <- colnames(z.repro)
+round(z.repro, 2)
+```
+
+Die z-Werte stellen die Quartile der Normalverteilung dar. Die zugehörigen Wahrscheinlichkeiten können aus der NV-Tabelle abgelesen werden.
+
+```{r echo=FALSE}
+P.repro <- pnorm(z.repro)
+round(P.repro, 2)
+```
+
+Um die Güte der Reprduktion zu beurteilen, wird elementweise die absolute Differenz zwischen der beiden P-Matrizen gebildet.
+
+```{r echo=FALSE}
+d <- abs(P - P.repro)
+round(d, 2)
+```
+
+Der durchschnittliche absolute Differenz wird als Indikator für die Güte des Modells genutzt. Der Wert sollte unter $.03$ liegen.
+
+```{r echo=FALSE}
+ad <- mean(d[lower.tri(d)])
+round(ad, 2)
+```
+
+Das Modell weist somit eine mittelmäßige Anpassung auf.
+
+
+
+******
+
+## Methode der sukzessiven Intervalle (Method of Succesive Intervals [MIS])
+
+
+### Theorie
+
+**Ziel:**  Information über den Abstand der Objekte (intervallskaliert)
+
+**Annahmen:** (Thurstone, 1927)
+* Urteiler kann Merkmalskontinuum in Kategorien aufteilen.
+* Kategoriengrenzen schwanken um wahren Wert.
+* Wahrscheinlichkeit für Realisierung einer Kategoriengrenze ist normalverteilt.
+* Beurteilung einer Merkmalsausprägung schwankt ebenfalls zufällig.
+* Wahrscheinlichkeit für Realisierung eines Urteils auch normalverteilt.
+* Urteiler stuft Reiz unterhalb Kategoriengrenze ein, wenn die im Urteil realisierte Merkmalsausprägung des Reizes geringer ist als die durch die realisierte Kategoriengrenze repräsentierte Merkmalsausprägung.
+
+### Simulation
+
+```{r echo=FALSE, results='hide'}
+# Berechnung der Kategorie und Objekt Parameter auf Basis
+# einer Kontingenztabelle:
+# Zeilen: Objekte
+# Spalten: Kategorien der Ratingskala
+#
+thurstone_msi <- function(m.f)
+{
+  m.h <- m.f/rowSums(m.f)           # relative Häufigkeiten
+  m.H <- t(apply(m.h, 1, cumsum))   # Zeilenweise kumulierte relative Häufigkeiten
+  m.H[m.H == 0] <- .0001            # Ersetzen der 0 und 1 Werte
+  m.H[m.H == 1] <- .9999
+  m.z <- t(apply(m.H, 1, qnorm))
+  m.z <- m.z[, -ncol(m.z)]
+  SM <- colMeans(m.z)               # Mittelwert der Kategorienwerte
+  ZM <- rowMeans(m.z)               # Mittelwert der Objektwerte
+  s.j <- mean(SM) - ZM              # Mittel der Kategorien - Objektwerte
+  s.j0 <- s.j - min(s.j)            # Skala bei Null verankern
+  list(categories=SM, objects=s.j, objects.0=s.j0)  
+}
+```
+
+**Ausgangsdaten**
+
+```{r echo=FALSE}
+rows <- c("Alkohol", "Ecstasy", "Hanf", "Heroin", "Kokain", "Nikotin", "Kaffee")
+m.f <- matrix(c(0, 0, 7, 6, 10, 1, 5,  
+         0, 0, 2, 0, 2, 5, 20,
+         0, 4, 9, 2, 10, 4, 0,
+         0, 0, 0, 0, 1, 2, 26,
+         0, 0, 1, 0, 2, 7, 19,
+         0, 0, 4, 7, 15, 2, 1,
+         4, 14, 9, 1, 1, 0, 0), ncol=7, byrow=TRUE)
+rownames(m.f) <- rows
+colnames(m.f) <- paste0("K", 1:7)
+m.f
+```
+
+**Parameterschätzungen**
+
+```{r echo=FALSE}
+l <- thurstone_msi(m.f)
+l
+```
+
+
+**Simulation von Daten auf Basis der Parameter**
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, fig.height=4}
+
+### Simulation ###
+
+# Ratings für alle Objekte in abhängigkeit von den wahren 
+# Objekt- und Kategoriegrenzen sowie den zugehörigen Standardabweichungen.
+#
+ratings_one_sample <- function(o.l, c.l, sd.o, sd.c)
+{
+  o.l.sim <- rnorm(length(o.l), mean=o.l, sd=sd.o)    # generate random values based on true object locations
+  c.l.sim <- rnorm(length(c.l), mean=c.l, sd=sd.c)    # generate random category breaks
+  x <- as.numeric(cut(o.l.sim, breaks=c(-Inf, c.l.sim, Inf)))
+  names(x) <- names(o.l)
+  x
+}
+```
+
+**Simulierte Daten**
+
+```{r echo=FALSE}
+# Konkrete Simulation. Ausgangsdaten sind die Parameter der Beispieldaten
+l <- thurstone_msi(m.f)
+n <- 100
+o.l <- l$objects      # Objektlokationen
+c.l <- l$categories   # Lokationen Kategoriegrenzen  
+ncat <- length(c.l)
+sd.o <- .5            # Streuung der Objekturteile
+sd.c <- .5            # Streuung der Kategorieurteile
+x <- replicate(n, ratings_one_sample(o.l, c.l, sd.o, sd.c))  # Ratings für n Beurteiler
+xa <- t(apply(x, 1, tabulate, nbin=length(c.l) + 1))
+colnames(xa) <- paste0("K", 1:(length(c.l) + 1))
+xa
+```
+
+**Dichteverteilung der Ratings**
+
+```{r echo=FALSE, fig.height=4}
+x.long <- melt(x)
+ggplot(x.long, aes(x=value, fill=Var1)) + 
+  geom_density(adjust=2, alpha=.3) + 
+  scale_x_continuous(breaks=1:7, labels=1:7, name="Kategorien")
+```
+
+**Schätzungen der Parameter**
+
+```{r echo=FALSE}
+#thurstone_msi(m.f)
+thurstone_msi(xa)
+```
+
+
+
+
+### Test
+
+Aus Gerich (). Thurstone- und Likertskalierung, 20XX).
+
+Gefährlichkeitsbewertung verschiedener Substanzen auf einer Ratingskala von 1 bis 7 von 1=völlig ungefährlich, 7=sehr gefährlich).
+
+```{r echo=FALSE}
+m.f
+```
+
+
+```{r echo=FALSE, results='hide'}
+#Berechnen wir die relativen Häufigkeiten.
+m.h <- m.f/rowSums(m.f)
+round(m.h, 2)
+```
+
+Zeilenweise kumulierte relative Häufigkeiten
+
+```{r echo=FALSE}
+m.H <- t(apply(m.h, 1, cumsum))
+round(m.H, 2)
+```
+
+Zur Häufigkeit gehörige z-Werte. Die Verteilung der Ratings wird als NV um den wahren Wert angenommen. Die P-Werte 0 und 1 Werte haben als korrespondierende z-Werte -/+ Inf. Aus diesem Grund werden diese Werte hier mit 0.0001 bzw. .9999 substituiert, um nutzbare z-Werte zu erhalten. Die letzte Kategorie liefert keine zur Skalierung nutzbaren Informationen, da Sie für jede Kategorie $P=1$ beträgt. Sie wird deshalb ausgelassen.
+
+```{r echo=FALSE}
+m.H[m.H == 0] <- .0001 
+m.H[m.H == 1] <- .9999
+m.z <- t(apply(m.H, 1, qnorm))
+m.z <- m.z[, -ncol(m.z)]
+round(m.z, 2)
+```
+
+Die Lokation der Kategoriegrenzen ergibt sich durch die spaltenweise Mittelung der z-Werte.
+
+```{r echo=FALSE}
+SM <- colMeans(m.z)
+round(SM, 2)
+```
+
+Die Werte für die beurteilten Objekte ergeben sich als Zeilenmittel.
+
+```{r echo=FALSE}
+ZM <- rowMeans(m.z)
+round(ZM, 2)
+```
+
+Als letzte Schritt wird von dem Mittel der Kategorielokationen die Objektlokationen abgezogen.
+
+```{r echo=FALSE}
+s.j <- mean(SM) - ZM
+round(s.j, 2)
+```
+
+**Test**
+```{r}
+thurstone_msi(m.f)
+```
+
+
+**Skalenwerte und Objektwerte auf dem Merkmalskontinuum**
+
+```{r echo=FALSE}
+cex <- 1
+plot(cbind(1, c(SM, s.j)), type="n", xlim=c(0,2), xlab="", ylab="", 
+     xaxt="n", yaxt="n", frame=F)
+abline(v=1)
+segments(.7, SM, 1, SM, col="blue")
+text(.7, SM, labels=names(SM), pos=2, cex=cex, col="blue")
+segments(1, s.j, 1.3, s.j, col="red")
+text(1.3, s.j, labels=names(s.j), pos=4, cex=cex, col="red")
+```
+
+
+### Beispiel II
+
+Fünf Therapieprotokoll A-E sollen in Bezug auf das Merkmalskontinuum emotional Wärme skaliert werden. Hierzu liegen die Urteile von $n=50$ Probanden auf einer Ordinalskala vor. Diese lautet wie folgt: 1= "sehr viel", 2="viel", 3="neutral", 4="wenig", 5="gar nicht".
+Das Ergebnis ist folgende Kontingenztabelle.
+
+```{r echo=FALSE}
+m.f <- matrix(c(2,8,10,13,17,
+              5,10,15,18,2,
+              10,12,20,5,3,
+              15,20,10,3,2,
+              22,18,7,2,1), byrow=T, ncol=5)
+m.f
+```
+
+Berechnen wir die relativen Häufigkeiten.
+
+```{r echo=FALSE}
+m.h <- m.f/rowSums(m.f)
+m.h
+```
+
+Kumulierte relative Häufigkeiten
+
+```{r echo=FALSE}
+m.H <- t(apply(m.h, 1, cumsum))
+m.H
+```
+
+Thurstone macht die Annahme NV.
+
+```{r echo=FALSE}
+m.z <- t(apply(m.H, 1, qnorm))
+m.z[m.z == Inf] <- 1
+m.z <- m.z[, -ncol(m.z)]
+m.z
+```
+
+Spaltensummen und Sapltenmittel
+
+```{r echo=FALSE}
+SS <- colSums(m.z)
+SM <- colMeans(m.z)
+m.z.s <- rbind(m.z, SS, SM)
+```
+
+Zeilensummen und Zeilenmittel
+
+```{r echo=FALSE}
+ZS <- rowSums(m.z.s)
+ZM <- rowMeans(m.z.s)
+m.z.sz <- cbind(m.z.s,  ZS, ZM)
+m.z.sz
+```
+
+Durchschnitt Kategoriengrenze
+
+```{r echo=FALSE}
+MK <- mean(SM)
+MK
+MA <- ZM - MK 
+m <- cbind(m.z.sz, MA)
+m
+```
+
+Lineare Transformation, um einen künstlichen Nullpunkt zu konstruieren.
+
+```{r}
+MA
+#MA <- MA + abs(min(MA))
+#MA
+```
+
+## Literatur
+
+Gerich, J. (2010). Thurstone-und Likertskalierung. In C. Wolf & H. Best (Eds.), Handbuch der sozialwissenschaftlichen Datenanalyse (pp. 259–281). VS Verlag für Sozialwissenschaften.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
