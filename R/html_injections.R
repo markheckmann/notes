@@ -22,10 +22,9 @@ inject_code_after_body_tag <- function(file, include, tag="</body>")
   file.lines <- readLines(file, warn = FALSE, encoding = "UTF-8")
   include.lines <- readLines(include, warn = FALSE, encoding = "UTF-8")
   inc <- HTML(paste(include.lines, collapse = "\r\n"))
-  
   l <- str_replace(file.lines,
-                   perl(lookbehind),
-                   inc)
+                   regex(lookbehind),
+                   inc)  
   HTML(paste(l, collapse = "\r\n"))
 }
 
