@@ -11,7 +11,8 @@ c("skalierung_thurstone/scaling_thurstone.html",
   "cross_validation/cross_validation.html",
   "strategic_consensus_mapping_sray/strategic_consensus_mapping_sray.html",
   "regression_custom_hypotheses/regression_custom_hypotheses.html", 
-  "qq_plot_by_hand/qq_plot_by_hand.html")
+  "qq_plot_by_hand/qq_plot_by_hand.html", 
+  "multiple_factor_analysis/rmd/multiple_factor_analysis.html")
 
 
 base <- basename(html.files)
