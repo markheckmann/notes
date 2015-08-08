@@ -7,9 +7,9 @@
 # location of HTML file
 
 html.files <- 
-c("../public/skalierung_thurstone/scaling_thurstone.html", 
-  "../public/cross_validation/cross_validation.html",
-  "../public/strategic_consensus_mapping_sray/strategic_consensus_mapping_sray.html")
+c("skalierung_thurstone/scaling_thurstone.html", 
+  "cross_validation/cross_validation.html",
+  "strategic_consensus_mapping_sray/strategic_consensus_mapping_sray.html")
 
 
 base <- basename(html.files)
