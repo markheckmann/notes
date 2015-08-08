@@ -5,7 +5,7 @@ output:
     toc: true
 ---
 
-On this site you find some notes I took over the last years on quite diverse topics. Some of the notes are well worked out. Others are unfinished or work in progress and may contain errors. Most notes are in English, some are written in German. Notes which I considered useful for a broader audience are also published on my [R you ready](http://ryouready.wordpress.com) blog.
+On this site you find some notes I took over the last years on quite diverse topics. Some of the notes are well worked out. Others are unfinished or work in progress and may contain errors. Most notes are in English, some are written in German. Notes which I considered useful for a broader audience are also published on my [R you ready?](http://ryouready.wordpress.com) blog.
 
 All the source code to produce the notes can be found in one of the folders of the master branch of [this github repository](https://github.com/markheckmann/notes). 
 
@@ -18,9 +18,9 @@ All the source code to produce the notes can be found in one of the folders of t
     
 * Methods 
     + [Thurstone Skalierung](./scaling_thurstone.html)
+    + [KTT: Spearman Brown Korrektur](./ctt_spearman_brown.html)
     
 * Linear algebra
-    + TODO
 
 * Papers redone in R
     + [Tarakci et al. (2014). Strategic consensus mapping](./strategic_consensus_mapping_sray.html)
