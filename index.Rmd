@@ -1,0 +1,23 @@
+---
+title: "Features"
+output:
+  html_document:
+    toc: true
+---
+
+On this site you find some notes I took over the last years on quite diverse topics. Some of the notes are well worked out. Others are unfinished or work in progress and may contain errors. Most notes are in English, some are written in German. Notes which I considered useful for a broader audience are also published on my [R you ready](http://ryouready.wordpress.com) blog.
+
+* R
+
+* Stats
+    + Cross Validation [more](./cross_validation.html)
+    + 
+* Methods 
+    + Thurstone Skalierung [more](./scaling_thurstone.html)
+    
+* Linear algebra
+    +
+
+* Papers 
+    + Tarakci et al. (2014). Strategic consensus mapping [more](./strategic_consensus_mapping_sray.html)
+
