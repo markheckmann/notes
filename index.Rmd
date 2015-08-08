@@ -14,6 +14,8 @@ All the source code to produce the notes can be found in one of the folders of t
 * Stats
     + [Cross Validation](./cross_validation.html)
     + [Regression: Testing custom hypothesis](./regression_custom_hypotheses.html)
+    + [QQ-plots in R vs SPSS](./qq_plot_by_hand.html)
+    
 * Methods 
     + [Thurstone Skalierung](./scaling_thurstone.html)
     
