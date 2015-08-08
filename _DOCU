@@ -1,0 +1,9 @@
+The goal is to make all the notes I take publicly available on github and github pages. I keep all notes in seperate folders on the master branch. Note that rmarkdown > 0.4.2 should be used to render the .Rmd files, so the Bootstrap 3 framework is used. This is important as the navbar (see below) also uses Bootstrap 3.
+
+On the gh-pages branch the HTML files from all folders are first copied into the root folder and then modified, i.e. a navbar and a footer are added to all HTML files.
+
+To keep the the notes subfolders up to date on gh-pages I keep the master branch in sync by doing 
+ 
+  git merge master   
+
+when on the gh-pages branch. This will copy all the new folders from the master branch. Then all the HTML files can be processed and the pages can be created.
