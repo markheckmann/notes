@@ -1,0 +1,100 @@
+---
+title: "Understanding the SVD - Image Compression"
+output: 
+  html_document:
+    theme: united
+author: Mark Heckmann
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(comment=NA)
+```
+
+This little work shows how to compress an image using the SVD. An image is merely a numeric matrix in the case of a grayscale image and three or four matrices in the case of a color image. This will become clear as we read in the matrix. As we will use a grayscale image, we just have one matrix. 
+
+```{r}
+library(grid)
+library(jpeg)
+X <- readJPEG("../img/face_1.jpg")
+class(X)
+dim(X)
+```
+
+Let's plot the image.
+
+```{r}
+grid.raster(X)
+```
+
+Let $\mathbf{X}$ be the matrix of grayscale values with $x_{ij} \in [0,1]$ that stores the pixels. Now lets see the SVD in action. To compress compress the image, we are looking for a reduced rank matrix $\mathbf{X}_k$ with rank $k$ to approximate $\mathbf{X}$ as close as possible in a least-square sense, i.e. $||\mathbf{X} - \mathbf{X}_k||_2 \rightarrow min$. Currently, the rank of $\mathbf{X}$ is
+
+```{r}
+qr(X)$rank 
+```
+
+With the SVD of $\mathbf{X}$ being
+
+$$
+\mathbf{X} = \mathbf{UDV}^T, \\
+$$
+
+the best least squares approximation for $\mathbf{X}$ of rank $k$ is 
+
+$$
+\mathbf{X_k} = \sum_{j=1}^k \sigma_j u_j v_j^T
+$$
+
+where $u$ and $v$ denote the column vectors of $\mathbf{U}$ and $\mathbf{V}$, respectively. $\sigma_j$ is the $j$th entry on the diagonal of $\mathbf{D}$.
+
+```{r}
+d <- svd(X)
+k <- 1
+X1 <- d$u[ ,1:k] %*% diag(d$d[1:k], nrow=k, ncol=k) %*% t(d$v[ , 1:k])
+```
+
+Plotting $\mathbf{X_1}_1$ as above will generate an error, as some of the values are smaller than $0$ and some are bigger than $1$. 
+
+```{r}
+sum(X1 < 0 | X1 > 1) / prod(dim(X))   # proportion of values smaller 0 or bigger 1
+```
+
+This is because approximating the matrix using the SVD does not underly the restriction that the values have to be with the interval $[0,1]$. The SVD just gives the best least squares approximation, regardless of what the values are. Hence, we need to adjust for this issue. One way to do that is not simply set values smaller than $0$ to $0$ and bigger than $1$ to $1$.
+
+```{r}
+X1[X1 < 0] <- 0
+X1[X1 > 1] <- 1
+```
+
+Now we can plot the compressed image.
+
+```{r}
+grid.raster(X1)
+```
+
+A rank $1$ approximation is far to little information to recognize who is in the picture. Next, let's create a series of images slowly increasing the rank of the approximated matrix $\mathbf{X}_k$ and figure out what the minimum rank is to recognize who the person.
+
+```{r out.width=300}
+for (k in 1:12) {
+  Xk <- d$u[ ,1:k] %*% diag(d$d[1:k], nrow=k, ncol=k) %*% t(d$v[ , 1:k])
+  Xk[Xk < 0] <- 0
+  Xk[Xk > 1] <- 1
+  grid.newpage()
+  grid.raster(Xk)
+  grid.text(paste("k = ",k), 0, 0, just = c("left", "bottom"), gp=gpar(cex=3))
+}
+```
+
+Or the same again as an animation from rank $1$ to $30$.
+
+```{r animation, echo=FALSE, fig.show='animate', aniopts='controls'}
+for (k in 1:30) {
+  Xk <- d$u[ ,1:k] %*% diag(d$d[1:k], nrow=k, ncol=k) %*% t(d$v[ , 1:k])
+  Xk[Xk < 0] <- 0
+  Xk[Xk > 1] <- 1
+  grid.newpage()
+  grid.raster(Xk)
+  grid.text(paste("k = ",k), 0, 0, just = c("left", "bottom"), gp=gpar(cex=3))
+}
+```
+
+As you can see, at rank $30$ the image is still not really good. Of course, there are far better techniques for image compression and this work just served to demonstrate one possible use of the SVD.
