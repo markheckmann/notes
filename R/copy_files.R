@@ -9,7 +9,8 @@
 html.files <- 
 c("skalierung_thurstone/scaling_thurstone.html", 
   "cross_validation/cross_validation.html",
-  "strategic_consensus_mapping_sray/strategic_consensus_mapping_sray.html")
+  "strategic_consensus_mapping_sray/strategic_consensus_mapping_sray.html",
+  "regression_custom_hypotheses/regression_custom_hypotheses.html")
 
 
 base <- basename(html.files)
