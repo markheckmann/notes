@@ -1,0 +1,88 @@
+---
+title: "Partielle Regressionskoeffizienten"
+author: von Mark Heckmann
+output: 
+  html_document:
+    theme: united
+    toc: yes
+    toc_depth: 3
+---
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(comment=NA)
+```
+
+Genutzt wird der Datensatz `Duncan` aus dem Paket `car`. Siehe `?Duncan` für Informationen zum Datensatz.
+
+```{r message=FALSE, warning=FALSE}
+library(car)
+head(Duncan)
+```
+
+$$\widehat{prestige} = \beta_0 + \beta_1 income$$
+
+```{r}
+m1 <- lm(prestige ~ income, data=Duncan)
+coef(summary(m1))
+```
+
+$$\widehat{prestige} = \beta_0 + \beta_1 income +  \beta_2 education$$
+
+```{r}
+m2 <- lm(prestige ~ income + education, data=Duncan)
+coef(summary(m2))
+```
+
+Der Effekt von *income* in der multiplen Regression ist der Netto-Effekt wenn *education* kontrolliert wird. Anders ausgedrückt: Wenn *education* bereits seine Wirkung entfaltet hat, welchen zusätzlichen, von *education* linear unabhängigen Einfluss hat dann noch *income*? Um dies zu veranschaulichen können zwei Hilfsregressionen gerechnet werden:
+
+1. $prestige = \beta_0 + \beta_1 education + e_{prestige}$
+2. $income = \beta_0 + \beta_1 education + e_{income}$
+
+```{r}
+m3 <- lm(prestige ~ education, data=Duncan)
+e.prestige <- residuals(m3)                    # residuals of prestige 
+m4 <- lm(income ~ education, data=Duncan)
+e.income <- residuals(m4)                      # residuals of income 
+```
+
+Die Residuen der ersten Regression $e_{prestige}$ sind jene Werte, die durch *education* nicht linear erklärt werden können. In diesen Werte ist der Einfluss von *education* entfernt oder kontrolliert.
+
+In der zweiten Regression wird der Einfluss von *education* aus dem Prädiktor *income* entfernt. Die Residuen $e_{income}$ enthalten nun Werte, die nicht durch *education* linear erklärt werden können.
+
+Um nun die Frage zu beantworten, welchen Nettoeinfluss *income* auf *prestige* hat wird eine dritte Regression gerechnet. Die Residuen der ersten Hilfsregression werden auf die Residuen der zweiten Hilfsregression regridiert. Eine Regressionskonstante ist diesmal nicht nötig, da der Mittelwert der Residuen jeweils Null ergibnt und die Gerade somit bei $P(0,0)$ durch den Ursprung läuft.
+
+$$e_{prestige} = \beta_1 e_{income} + e$$
+
+Das heisst, dass nun das um *education* bereinigte *income* das um *education* bereinigte *prestige* voraussagen soll. Der Koeffizient dieser Regression wird *partieller Regressionkoeffzient* genannt, da er nur jene Teile (Parts) der Beziehung, an denen *education* keinen Anteil mehr hat. Sein Wert ist identisch mit dem Koeffizienten in der oben gerechneten multiplen Regression.
+
+```{r}
+m5 <- lm(e.prestige ~ e.income -1)   # Kein Intercept hier
+coef(summary(m5))
+```
+
+Weiterhin besteht ein enger Zusammenhang zur Partialkorrelation. Während der partielle Regressionskoeffizient die Regression von $e_{prestige}$ auf $e_{income}$ ist, so ist der partielle Korrelationskoeffizient die Korrelation zwischen diesen.
+
+$$
+r_{(prestige\, income)  \cdot education} = r_{e_{prestige} \; e_{income} }
+$$
+
+```{r message=FALSE, warning=FALSE}
+cor(e.prestige, e.income)     # Korrelation zwischen den Residuen der Hilfsregressionen
+```
+
+Zur Kontrolle berechen wir die Psartialkorrelation mit Hilfe von `pcor.test` aus dem Paket `ppcor`.
+
+```{r message=FALSE, warning=FALSE}
+library(ppcor)                # dasselbe mit der Funktion für Partialkorrelation
+attach(Duncan)
+pcor.test(prestige, income, education)
+```
+
+
+```{r echo=FALSE, results='hide'}
+# regression mit standardisierten residuen ergibt auch diec partialkorrelation
+lm(scale(e.prestige) ~ scale(e.income) - 1)
+```
+
+
+
