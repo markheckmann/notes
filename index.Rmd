@@ -23,8 +23,9 @@ All the source code to produce the notes can be found in one of the folders of t
 * Linear algebra
 
 * Papers redone in R
-    + [Tarakci et al. (2014). Strategic consensus mapping](./strategic_consensus_mapping_sray.html)
     + [Abdi & Valentin (2007). Multiple factor analysis (MFA)](./multiple_factor_analysis.html)
+    + [Tarakci et al. (2014). Strategic consensus mapping](./strategic_consensus_mapping_sray.html)
+
     
     
 
