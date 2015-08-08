@@ -13,7 +13,8 @@ c("skalierung_thurstone/scaling_thurstone.html",
   "regression_custom_hypotheses/regression_custom_hypotheses.html", 
   "qq_plot_by_hand/qq_plot_by_hand.html", 
   "multiple_factor_analysis/rmd/multiple_factor_analysis.html",
-  "ctt_spearman_brown/ctt_spearman_brown.html")
+  "ctt_spearman_brown/ctt_spearman_brown.html",
+  "regression_partial/regression_partiell.html")
 
 
 base <- basename(html.files)
