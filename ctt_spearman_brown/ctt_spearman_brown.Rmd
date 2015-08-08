@@ -1,0 +1,191 @@
+---
+title: "KTT (Status: okay, evtl. leicht überarbeiten)"
+author: von Mark Heckmann
+output: 
+  html_document:
+    theme: united
+    toc: yes
+    toc_depth: 3
+---
+
+```{r warning=FALSE, message=FALSE}
+# Alle nötigen Pakete laden
+library(CTT)
+library(plyr)
+library(ggplot2)
+```
+
+
+# Spearman-Brown Korrektur bei parallelen Tests 
+
+Die Spearman-Brown Formel erlaubt die Berechung der Änderung in der Reliabilität einer Messung, bei Verlängerung oder Verkürzung eines Tests. Im Folgenden gehen wir davon aus, dass der Summenscore $S$ aus $m$ separaten parallelen, d.h. $\tau-äquivalenten$ Testteilen $Y_i$ zusammengesetzt wird, d.h.
+
+$$
+S = Y_1 + \dots + Y_m.
+$$
+
+Somit ergibt sich für nach Spearman-Brown auf Basis der Reliabilität der Einzeltests $Rel(Y)$ die neue Realibilität für $S$ von
+
+$$
+Rel(S) = \frac {m \cdot Rel(Y)}
+               {1 + (m-1)\cdot Rel(Y)}
+$$
+
+Nehmen wir an wir bilden den Summenscore $S$ aus zwei parallelen Tests $Y_1$ und $Y_2$. Es handelt sich somit um eine Testlängenverdoppelung, d.h. $m=2$. Die Reliabilität verändert sich nach obiger Formel wie folgt. Zur Berechnung wird die Funktion `spearman.brown` aus dem Paket `CTT` genutzt.
+
+```{r}
+rel.new <- spearman.brown(0.9, 2, "n")   # aus Paket CTT
+rel.new
+```
+
+Bei einer Testverlängerung um den Faktor $2$ erhöht sich die Reliabilität von $0.9$ auf $Rel(S)=`r round(rel.new[[1]], 2)`$. 
+
+Fragen wir nun anders herum. Bei einer minimal akzeptablen Reliabilität von $0.9$, kann der Test mit einer aktuellen Reliabilität von $Rel(S)=0.947$ um welchen Faktor verkürzt werden?
+
+```{r}
+m.new <- spearman.brown(0.947, 0.9, "r")   # "r", da Reliabilität als input 
+m.new
+```
+
+Wir erhalten genau das umgekehrte Ergebnis. Der Test kann in der Länge halbiert werden.
+
+Im Folgenden konstruieren wir eine Tabelle, so wie sie in vielen Lehrbüchern vorkommt, aus der die eben berechneten Veränderung der Realibilität bei Testverlängerung oder -verkürzung optisch abgelesen werden können.
+
+```{r fig.heigt=5}
+m <- seq(1, 4, len=100)
+rel <- seq(.5, .9, .1)
+d <- expand.grid(m=m, rel=rel)
+d$id <- 1:nrow(d)
+d <- ddply(d, .(id), transform, rel.new = spearman.brown(rel, m))
+g <- ggplot(d, aes(x=m, y=r.new, group=rel)) + geom_line() + ylim(.5, 1) + 
+        xlab("Veränderung der Testlänge um den Faktor m") + 
+        ylab("Reliabilität nach Veränderung der Testlänge") +
+        ggtitle("Spearman-Brown Tabelle")
+g
+```
+
+
+# Herleitung der Spearman-Brown Formel (bei parallelen Tests)
+
+Die Variable $S$ sei die Summe von $m$ $\tau$-äquivalenten Variablen, d.h. $S= Y_1 + \dots + Y_m$.
+Somit ist die Reliabilität von $S$ definiert als
+
+$$
+Rel(S) = \frac{Var(\tau_S)}{Var(S)}
+$$
+
+Zur Herleitung der Spearman-Brown Formel schauen wir uns zunächst den Zähler des Ausdrucks an.
+hier taucht $Var(\tau_S)$ auf. Da $\tau_S$ die Regression der True-Score Variablen auf $U$ (Personenvariable) ist, erhalten wir 
+
+$$
+\tau_S := E(S|U) = E(Y_1 + \dots + Y_m|U)  \\
+E(Y_1|U) + \dots + E(Y_m|U) = \\
+\tau_1 + \dots + \tau_m.
+$$
+
+Somit ist $\tau_S = \tau_1 + \dots + \tau_m$ und folglich
+
+$$
+Var(\tau_S) = Var(\tau_1 + \dots + \tau_m) = \\
+\sum_i Var(\tau_i) + \underbrace{\sum_i \sum_j}_{i \neq j} Cov(\tau_i, \tau_j).
+$$
+
+Wir erhalten für die $m$ Variablen folgende Varianz-Kovarianzmatrix
+
+$$
+\begin{pmatrix}
+ Var(\tau_1) & \cdots & Cov(\tau_1, \tau_m) \\ 
+  \vdots   & \ddots  & \vdots  \\ 
+ Cov(\tau_m, \tau_1) & \cdots  & Var(\tau_m) \\ 
+ \end{pmatrix}. 
+$$
+
+Da $\tau_i = \tau_j$ und somit $Cov(\tau_i, \tau_j) = Var(\tau)$ 
+erhalten wir in der gesamten Varianz-Kovarianzmatrix identische Einträge, d.h.
+
+$$
+\begin{pmatrix}
+ Var(\tau) & \cdots & Var(\tau) \\ 
+  \vdots   & \ddots  & \vdots  \\ 
+ Var(\tau) & \cdots  & Var(\tau) \\ 
+ \end{pmatrix}. 
+$$
+
+Die Varianz von $\tau_S$ ist die Summe aller Elemente der Matrix (siehe Abschnitt *Rechnen mit Varianzen*), d.h.
+
+$$
+Var(\tau_S) = m^2 \cdot Var(\tau)
+$$
+
+Betrachten wir nun die Varianz der Summenvariable $S$ im Nenner, d.h.
+
+$$
+Var(S) = Var(Y_1 + \dots + Y_m) = \\
+\sum_{i=1}^m{Var(Y_i)} + \underbrace{\sum_{i=1}^m \sum_{j=1}^m}_{i \neq j} Cov(Y_i, Y_j)
+$$
+
+Die Varianzen der Variablen parallerer Tests $Y_i$ sind alle gleich, da für alle gilt $Var(Y) = Var(\tau) + Var(\epsilon)$. Weiterhin ist $Cov(Y_i, Y_j) = Cov(\tau + \epsilon_i, \tau + \epsilon_j) = Var(\tau)$. Somit erhalten wird
+
+$$
+m \cdot Var(Y) + m \cdot (m-1) \cdot Var(\tau)
+$$
+
+Wir erhalten somit für die Reliabilität 
+
+$$
+Rel(S) = \frac{Var(\tau_S)}{Var(S)} \\
+= \frac{m^2 \cdot Var(\tau)}
+       {m \cdot Var(Y) + m \cdot (m-1) \cdot Var(\tau)} \\
+= \frac{m \cdot Var(\tau)}
+       {Var(Y) + (m-1) \cdot Var(\tau)}       
+$$
+
+Erweitern mit $Var(Y)$ ergibt
+
+$$
+= \frac{m \cdot Var(\tau) / Var(Y) }
+       {Var(Y) / Var(Y) + (m-1) \cdot Var(\tau) / Var(Y)}       
+$$
+
+Da $Rel(Y) = \frac{Var(\tau)}{Var(Y)}$ erhalten wir
+
+$$
+= \frac{m \cdot Rel(Y) }
+       {1 + (m-1) \cdot Rel(Y)}.      
+$$
+
+
+# Anhang: Rechnen mit Varianzen
+
+$S$ sei die Summe von $m$ Variablen, d.h. $S = Y_1 + \dots + Y_m$. 
+$Var(S)$ ist dann die Summe aller Einträge aus der zugehörigen Varianz-Kovarianzmatrix.
+Für den Fall von drei Variablen, d.h. $S = Y_1 + Y_2 + Y_3$ erhalten wir die Varianz-Kovarianzmatrix
+
+$$
+\begin{pmatrix}
+ Var(Y_1) & Cov(Y_1, Y_2) & Cov(Y_1, Y_3) \\ 
+ Cov(Y_1, Y_2)  & Var(Y_2) & Cov(Y_2, Y_3) \\ 
+ Cov(Y_1, Y_3) & Cov(Y_2, Y_3) & Var(Y_3) \\ 
+ \end{pmatrix}. 
+$$
+
+Durch Aufaddieren aller Einträge erhalten wir 
+
+$$
+Var(Y_1 + Y_2 + Y_3) = \sum_i Var(Y_i) + \underbrace{\sum_i \sum_j}_{i \neq j} Cov(Y_i, Y_j).
+$$
+
+Die Formeln in R überprüfen:
+
+```{r}
+set.seed(0)
+d <- replicate(3, rnorm(10))      # Drei Variablen mit zufälligen Werten erzeugen
+d <- as.data.frame(d)             # in Dataframe umwandeln
+vc <- cov(d)                      # Varianz-Kovarianzmatrix
+vc        
+sum(vc)                           # Alle Einträge der Matrix addieren
+
+d <- transform(d, S = V1+V2+V3)   # Summenvariable S bilden 
+var(d$S)                          # Varianz ist identisch mit obiger Berechnung
+```
+
