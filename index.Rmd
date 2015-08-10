@@ -11,8 +11,8 @@ All the source code to produce the notes can be found in one of the folders of t
 
 * R
     + [QQ-plots in R vs SPSS](./qq_plot_by_hand.html)
-    + [Regular expressions in R](./regular_expressions/regex.pdf)
-    + [Simulations with R (basics)](./simulation_basics/2012_simulation_reworked.pdf)
+    + [Reguläre Ausdrücke in R](./regular_expressions/regex.pdf)
+    + [Simulationen mit R (basics)](./simulation_basics/2012_simulation_reworked.pdf)
         
 * Stats
     + [Cross Validation](./cross_validation.html)
