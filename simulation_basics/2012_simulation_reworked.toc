@@ -1,0 +1,8 @@
+\contentsline {section}{\numberline {1}Stichprobenverteilung des Mittelwerts}{2}
+\contentsline {section}{\numberline {2}Varianzsch\IeC {\"a}tzung}{4}
+\contentsline {section}{\numberline {3}$\Pi $ berechnen}{9}
+\contentsline {section}{\numberline {4}Stichprobenverteilung von Korrelationskoeffizienten}{13}
+\contentsline {section}{\numberline {5}Formel f\IeC {\"u}r Konfidenzintervalle f\IeC {\"u}r binomiale Anteile \IeC {\"u}berpr\IeC {\"u}fen}{17}
+\contentsline {section}{\numberline {6}Compare true sequences of coins flips and made up ones}{28}
+\contentsline {section}{\numberline {7}Prisoner problem}{30}
+\contentsline {section}{Literature}{32}
