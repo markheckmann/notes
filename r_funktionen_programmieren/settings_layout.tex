@@ -1,0 +1,477 @@
+\usepackage{blindtext}
+\usepackage{lmodern}
+\usepackage[english, ngerman]{babel}
+\usepackage{url} 
+\usepackage{tikz}
+\usetikzlibrary{shapes,positioning}
+\usepackage{wallpaper}
+\usepackage{xcolor} 
+\usepackage{marginnote}
+\usepackage[framemethod=TikZ]{mdframed}                  
+\usepackage{enumitem}  
+\usepackage{longtable}  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FONT SETTING %%%
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc}             % nach hinten da sonst Konflikte mit Sweave
+%\usepackage[applemac]{inputenc}
+\DisemulatePackage{setspace}            % um setspace mit memoir zu nutzen
+\usepackage[onehalfspacing]{setspace}   % singlespacing
+\setstretch{1.0}                        % for other than standard spacings
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LAYOUT  
+\usepackage{marvosym}
+\usepackage{parskip}
+%\usepackage[left=2.5cm, top=2cm, right=2.5cm, bottom=4cm, nohead, nofoot]{geometry} %for report
+
+%\usepackage{fancyhdr}
+\usepackage[centering, bindingoffset=1cm, headheight=15pt, includeheadfoot, textheight=24cm, textwidth=14cm]{geometry}
+% Festlegung des Seitenstils (fancyhdr)  
+%\usepackage{mdframed}
+
+%\usepackage[usenames]{color}  % nut rausnehmen wenn driver HighlightWeaveDriver aus highlight package genutzt wird, da dieser auch usepackage{color} einfügt
+\definecolor{titlepagecolor}{rgb}{0.060, 0.140, 0.430}
+\definecolor{codecolor}{rgb}{0.400, 0.400, 0.400}
+\definecolor{codecolor}{rgb}{.647,.129,.149}
+\definecolor{uebungcolor}{rgb}{0.950, 0.950, 0.950}       
+\definecolor{listingheadercolor}{rgb}{0.700, 0.700, 0.700}
+
+
+%% roter Untersctrich am oberen Seitenrand für fancyhdr
+\makeatletter
+\def\headrule{{\color{nicered}\if@fancyplain\let\headrulewidth\plainheadrulewidth\fi
+\hrule\@height\headrulewidth\@width\headwidth
+\vskip-\headrulewidth}}
+\makeatother
+
+% \pagestyle{fancy}
+% \fancyhf{}
+% \fancyhead[LE,RO]{{\textcolor{nicered}\thepage}}
+% %\fancyfoot[LO]{Titel der Arbeit}
+% %\fancyfoot[RE]{Institut} 
+% \fancyhead[LO]{\sffamily\nouppercase {\textcolor{nicered}{\rightmark}}}    %\slshape
+% \fancyhead[RE]{\sffamily\nouppercase {\textcolor{nicered}{\leftmark}}}   
+
+% \renewcommand{\headrulewidth}{0.5pt}
+% %\renewcommand{\footrulewidth}{0.5pt}
+% %\setlength{\headheight}{15pt}
+% %\setlength{\footheight}{15pt}  
+
+%\usepackage[]{geometry}  % for book
+%\usepackage{a4wide}  
+\setlength{\footskip}{1cm}   % Seitenzahl weiter n. unten, Achtung ggf. Problem bei Fussnoten
+\setlength{\headsep}{1cm}
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\usepackage[hang]{footmisc} % flushmargin
+\setlength{\footnotemargin}{.5cm}
+\setlength{\footnotesep}{.5cm}
+% \setlength{\textwidth}{160mm}
+%\setlength{\oddsidemargin}{10mm}
+%\usepackage[titletoc]{appendix}     % for named appendices
+%\usepackage{hanging}            % for hanging indent environment
+\clubpenalty = 100000    % Disable single lines at start of paragraph (Schusterjungen)
+\widowpenalty = 100000   % Disable single lines at end of paragraph (Hurenkinder)
+\displaywidowpenalty = 100000
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SUBJECT INDEX
+\usepackage{makeidx}
+\makeindex{}
+\renewcommand{\indexname}{Subject index}      % change name of index page
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% TABLE OF ... CONTENTS, FIGURES AND TABLES (cft)
+%\usepackage{tocloft} 
+%\settocdepth{subsection}       % subsection in toc bei memoir 
+\setsecnumdepth{subsection}    % subsection nummerieren, macht memoir als default nicht
+\renewcommand{\cftchapterfont}{\normalfont\sffamily\color{nicered}}       % chapter format
+\renewcommand{\cftchapterformatpnum}{\normalfont\sffamily\color{nicered}} % chapter number 
+\renewcommand*{\cftchapterafterpnum}{\par \vspace{2mm}}           % space after chapter    
+\renewcommand{\cftsectionfont}{\normalfont\sffamily}              % section format  
+\renewcommand{\cftsectionformatpnum}{\normalfont\sffamily}        % section number               
+\renewcommand{\cftsubsectionfont}{\normalfont\sffamily}           % subsection format
+\renewcommand{\cftsubsectionformatpnum}{\normalfont\sffamily}     % subsection number                   
+
+\renewcommand{\cftfigurefont}{\normalfont\sffamily}       % figure format
+\renewcommand{\cftfigureformatpnum}{\normalfont\sffamily} % figure number 
+                                                                             
+\renewcommand{\cfttablefont}{\normalfont\sffamily}       % table format
+\renewcommand{\cfttableformatpnum}{\normalfont\sffamily} % table number
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIGURE AND TABLE SETTINGS 
+\usepackage{booktabs}
+\usepackage[flushleft]{threeparttable}
+\usepackage{tabularx}
+%\usepackage[tight]{subfigure} 
+\usepackage{subfig}  
+\usepackage{rotating}
+\usepackage{float}
+%\restylefloat{figure}     % H will mean directly here now .
+                           % funktioniert nicht zusammen mit memoir!!!
+\usepackage[]{caption}   %bold caption label
+\captionsetup[figure]{font=footnotesize, labelfont={footnotesize, color=nicered, bf}, labelsep=space}                                  % labelsep=newline
+\captionsetup[table]{font=footnotesize, labelfont={footnotesize, bf}, labelsep=space}
+\newcommand\T{\rule{0pt}{2.6ex}}          % global change toprule spaces table
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}}    % global change bottomrule table
+% \setlength{\subfigtopskip}{5mm}           % set skips for subfigures and tables
+% \setlength{\subfigcapskip}{1mm}
+%  
+\usepackage{ragged2e}
+\newcolumntype{x}[1]{>{\hsize=#1\hsize}X}
+\newcolumntype{y}[1]{>{\RaggedRight\arraybackslash\hsize=#1\hsize}X}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{pstricks}  % für ovale boxen
+\usepackage{xparse}    % für NewDocumentCommand
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% HYPHENATIONS %%%
+%\hyphenation{OpenRepGrid}       % no hyphenation in these words
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% COMMANDS 
+\title{My Title}
+\author{Mark Heckmann}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\newcommand{\R}{{\sffamily R}}
+\newcommand{\rtextsize}{{\tiny}}
+\newcommand{\webinfo}[2]{
+  \marginpar{
+    \href{#1}{
+    \includegraphics[width=8mm]{pics/infosymbol.jpg}}
+    \scriptsize \textit{#2}
+}}
+\newcommand{\webinfosmall}[1]{  
+    \href{#1}{\textsuperscript{\Info}}
+}                     
+% switch für schwarz-weiß Grafiken. Jede Grafik hat eine SQ Version mit dem Zusatz _bw
+\newcommand{\bw}{_bw} % {}  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+% memoir definition of style, raus, wenn kein memoir genutzt werden soll
+
+\usepackage{calc, graphicx, soul, fourier}
+\definecolor{nicered}{rgb}{.647,.129,.149}
+\makeatletter
+\newlength\dlf@normtxtw
+\setlength\dlf@normtxtw{\textwidth}
+\def\myhelvetfont{\def\sfdefault{mdput}}
+\newsavebox{\feline@chapter}
+\newcommand\feline@chapter@marker[1][4cm]{%
+  \sbox\feline@chapter{%
+  \resizebox{!}{#1}{\fboxsep=1pt%
+  \colorbox{nicered}{\color{white}\bfseries\sffamily\thechapter}%
+  }}%
+  \rotatebox{90}{%
+  \resizebox{%
+    \heightof{\usebox{\feline@chapter}}+\depthof{\usebox{\feline@chapter}}}%
+  {!}{\scshape\so\@chapapp}}\quad%
+    \raisebox{\depthof{\usebox{\feline@chapter}}}{\usebox{\feline@chapter}}%
+}
+\newcommand\feline@chm[1][4cm]{%
+  \sbox\feline@chapter{\feline@chapter@marker[#1]}%
+  \makebox[0pt][l]{% aka \rlap
+  \makebox[1cm][r]{\usebox\feline@chapter}%
+}}
+\makechapterstyle{daleif1}{
+\renewcommand\chapnamefont{\normalfont\Large\scshape\raggedleft\so\sffamily}
+\renewcommand\chaptitlefont{\normalfont\huge\scshape\color{nicered}\sffamily}%\bfseries
+\renewcommand\chapternamenum{}
+\renewcommand\printchaptername{}
+\renewcommand\printchapternum{\null\hfill\feline@chm[2.5cm]\par}
+\renewcommand\afterchapternum{\par\vskip\midchapskip}
+\renewcommand\printchaptertitle[1]{\chaptitlefont\raggedleft ##1\par}
+}
+\makeatother  
+\chapterstyle{daleif1}  
+
+% change section looks other color
+\usepackage{titlesec}     % to change vertical space before chapter
+% \titleformat{\chapter}[display]
+% {\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+% % this alters "before" spacing (the second length argument) to 0
+% \titlespacing*{\chapter}{0pt}{0pt}{40pt}
+
+\titleformat{\section}    % Farbe der Überschriften ändern
+{\color{nicered}\normalfont\Large\sffamily}  %\bfseries
+{\color{nicered}\thesection}{1em}{}
+
+\titleformat{\subsection}    % Farbe der Überschriften ändern
+{\color{nicered}\normalfont\large\sffamily}  %\bfseries
+{\color{nicered}\thesubsection}{1em}{}   
+                  
+                  
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}     % für Beispiel R Code
+% \DeclareCaptionFont{white}{\color{white}}
+% \DeclareCaptionFormat{listing}{\colorbox{listingheadercolor}{\parbox{\textwidth}{#1#2#3}}}
+% \captionsetup[lstlisting]{format=listing, labelfont=white, textfont=white}
+% \lstset{basicstyle=\scriptsize \ttfamily, 
+%         frame=blr, rulesepcolor=\color{gray},
+%         columns=fixed,
+%         literate={ö}{{\"o}}1
+%                  {ä}{{\"a}}1
+%                  {ü}{{\"u}}1}   
+
+\DeclareCaptionFont{fontlist}{\bfseries \sffamily\color{nicered}}
+\DeclareCaptionFormat{listingformat}{#1#2#3\par\vspace{4mm}}
+%\DeclareCaptionLabelFormat{listing}{(\bfseries \sffamily {#2})}
+\captionsetup[lstlisting]{format=listingformat, labelfont=fontlist, textfont=fontlist,
+                          font={bf, footnotesize}}
+\lstset{basicstyle=\scriptsize \ttfamily, 
+      frame=none, 
+      columns=fixed,
+      xleftmargin=2mm,
+      framesep=2mm, 
+      framerule=1pt, 
+      rulecolor=\color{nicered},
+      fillcolor=\color{uebungcolor},
+      framextopmargin=5mm,
+      framexbottommargin=3mm,
+      breaklines=f, 
+      literate={ö}{{\"o}}1
+               {ä}{{\"a}}1
+               {ü}{{\"u}}1} 
+                                 
+
+% colored fbox
+\definecolor{fboxcolor}{rgb}{0.500, 0.500, 0.500} 
+\newcommand{\picfbox}[1]{{\color{fboxcolor}\fbox{\normalcolor#1}}}
+
+%\newcommand\picfbox{\fbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%%  Seitenboxen  %%%%
+%%%%%%%%%%%%%%%%%%%%%%%  
+
+% DOES NOT WORK WELL!
+\NewDocumentCommand\videosym{O{}m}{%
+\noindent \marginpar{ 
+\hspace{2em}%
+\includegraphics[width=1cm]{pics/symbol_video.pdf} %
+} %
+}   
+               
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Übungsboxen 1 %%%%
+%%%%%%%%%%%%%%%%%%%%%%%   
+                
+% \marginpar{\centering{\includegraphics[width=2cm]{pics/nerd.png}}}
+% Übungsumgebung definieren
+\makeatletter
+\newenvironment{uebung}
+{ % image on side
+\begin{lrbox}{\@tempboxa}
+  \begin{minipage}{\columnwidth}}
+{\end{minipage}\end{lrbox}%
+   \colorbox{uebungcolor}{\usebox{\@tempboxa}}} 
+\makeatother
+
+\newcounter{uebung_no}
+\newenvironment{uebung_item}
+   {\stepcounter{uebung_no}
+   \begin{enumerate}\item[\arabic{uebung_no}.] \color{black}}
+   {\end{enumerate}}   
+       
+          
+% weitere Boxen für Übungen
+% \usepackage{fancybox}
+% \definecolor{white}{rgb}{1.000, 1.000, 1.000}
+% \definecolor{darkgray}{rgb}{0.900, 0.900, 0.900}
+% \definecolor{gray}{rgb}{0.500, 0.500, 0.500}
+% 
+% \newenvironment{infobox}[1][Übungen]{
+% \begin{center}
+% \begin{Sbox}
+% \begin{minipage}{.9\textwidth}
+% \textcolor{white}{\large\textsc{#1}}
+% \end{minipage}
+% \end{Sbox}
+% \colorbox{darkgray}{\TheSbox}
+% \begin{Sbox}
+% \begin{minipage}{.9\textwidth}
+% }
+% {
+% \end{minipage}
+% \end{Sbox}
+% \colorbox{gray}{\TheSbox}
+% \end{center}
+% }
+% %%%%%%
+% \begin{infobox}{Test}
+% Some info to be put here  
+% \end{infobox}  
+
+\usepackage{framed}
+
+\newcounter{uebungsbox_no}
+\newenvironment{uebungsbox}{%
+  \def\FrameCommand{\fboxsep=\FrameSep \fcolorbox{uebungcolor}{uebungcolor}}%
+  \color{black} \MakeFramed {\FrameRestore}%
+  \stepcounter{uebungsbox_no}}%
+ {\endMakeFramed}
+
+\usepackage[hidelinks]{hyperref}   % mactex muss geupdated werden um hidelinks nutzen zu können, da neues argument, solange folgendes:
+\hypersetup{
+   colorlinks=false,
+   pdfborder={0 0 0},
+}       
+
+%%%%%%%%%%%%%%%%%%%%%%%
+%%%% Übungsboxen 2 %%%%
+%%%%%%%%%%%%%%%%%%%%%%%
+% guter Ansatz mit mdframed, macht jedoch Fehler beim Umbruch und ich
+% kann den Grund nicht finden. So lange muss ich weiter
+% den oberen Ansatz nutzen (außer der lernziel box, die wird schon genutzt)  
+
+\definecolor{myred}{rgb}{.647,.129,.149}
+\definecolor{background}{rgb}{.980, .980, .980}
+
+\newcounter{uebung_2}
+\newenvironment{uebung_2}
+   {\stepcounter{uebung_2}
+      \begin{enumerate}\item[\arabic{uebung_2}.] \color{black}}
+   {\end{enumerate}}
+
+\newcounter{uebungsbox_2}
+\newenvironment{uebungsbox_2}
+   {\stepcounter{uebungsbox_2} 
+      \begin{mdframed}[style=uebungsboxstyle]
+      {\bfseries \color{myred} Übungsbox \arabic{uebungsbox_2}} \par}
+   {\end{mdframed}} 
+
+     
+% \newenvironment{lernzielbox_alt}
+%  {\begin{mdframed}[style=uebungsboxstyle, 
+%                    skipbelow=\baselineskip] }
+%  {\end{mdframed}}  
+
+% Box am Kapitelanfang, in der die Lernziele stehen.
+% Muss mit items (\item Zeilen) gefüllt werden
+\newenvironment{lernzielbox}[1][Was bietet dieses Kapitel?]
+  { \begin{center}
+    \begin{minipage}{.9\linewidth}
+    \begin{mdframed}[style=uebungsboxstyle, 
+                     skipbelow=\baselineskip]
+    {\bfseries \sffamily \color{nicered} #1} \par
+    \begin{enumerate}[itemsep=1pt, topsep=12pt, partopsep=0pt, 
+                      label=\color{nicered}\theenumi] }
+  { \end{enumerate} 
+    \end{mdframed}
+    \end{minipage} 
+    \end{center}  }    
+
+% Box am Kapitelanfang, in der die Lernziele stehen.
+% Muss mit items (\item Zeilen) gefüllt werden
+\newenvironment{literaturverweise}[1][Weiterführende Literatur]
+  { \begin{center}
+    \begin{minipage}{.95\linewidth}
+    \begin{mdframed}[style=uebungsboxstyle, 
+                     skipbelow=\baselineskip]
+    {\bfseries \sffamily \color{nicered} #1} \par }
+  { \end{mdframed}
+    \end{minipage} 
+    \end{center}  }  
+        
+\newenvironment{codebox}[1][]
+  { \begin{center}
+    %\begin{minipage}{1.0\textwidth}
+    \begin{mdframed}[style=uebungsboxstyle, 
+                     skipbelow=\baselineskip]
+    {\bfseries \sffamily \color{nicered} #1} \par }
+  { \end{mdframed}
+   % \end{minipage} 
+    \end{center}  }  
+                             
+\global\mdfdefinestyle{uebungsboxstyle}{%
+  linecolor=myred, roundcorner=10pt,
+  backgroundcolor=background, middlelinewidth=1pt,%
+  leftmargin=1cm, rightmargin=1cm
+}
+
+
+%%%%%%%%%%%%%%
+%%% Footer %%%
+%%%%%%%%%%%%%%
+
+%% Header and footer heights
+\setheadfoot{\baselineskip}{10mm}
+\setlength\headsep{7mm}
+
+\newlength\pagenumwidth
+\settowidth{\pagenumwidth}{99}
+
+%% Define style of page number colour box
+\tikzset{pagefooter/.style={
+anchor=base, font=\sffamily\bfseries\small,
+text=white, fill=nicered!80!black, text centered,
+text depth=17mm,text width={\pagenumwidth + 1mm}}}
+
+
+%%%%%%%%%%
+%%% Re-define running headers on non-chapter odd pages
+%%%%%%%%%%
+\makeoddhead{headings}
+%% Left header is empty but I'm using it as a hook to paint the
+%% background rectangles underneath everything else  MH: MilkTea!25!white to white!25!white   
+{\begin{tikzpicture}[remember picture,overlay]
+\fill[white!25!white] (current page.north east) 
+  rectangle (current page.south west);
+\fill[white, rounded corners] 
+  ([xshift=-10mm,yshift=-20mm]current page.north east) rectangle 	
+	([xshift=15mm,yshift=17mm]current page.south west);
+\end{tikzpicture}}%
+%% Blank centre header
+{}%
+%% Display a decorate line and the right mark (chapter title)
+%% at right end
+{\begin{tikzpicture}[xshift=-.75\baselineskip,yshift=.25\baselineskip,remember picture, overlay,fill=nicered,draw=nicered]\fill circle(3pt);\draw[semithick](0,0) -- (current page.west |- 0,0);\end{tikzpicture}\sffamily\itshape\small\rightmark}
+
+%%%%%%%%%%
+%%% Re-define running footers on odd pages
+%%% i.e. display the page number on the right
+%%%%%%%%%%
+\makeoddfoot{headings}{}{}{%
+\tikz[baseline]\node[pagefooter]{\thepage};}
+\makeoddfoot{plain}{}{}{\tikz[baseline]\node[pagefooter]{\thepage};}
+
+
+%%%%%%%%%%
+%%% Re-define running headers on non-chapter even pages
+%%%%%%%%%%
+\makeevenhead{headings}
+%% Draw the background rectangles; then the left mark (section
+%% title) and the decorate line  MH: MilkTea!25!white to white!25!white
+{{\begin{tikzpicture}[remember picture,overlay]
+\fill[white!25!white] (current page.north east) rectangle (current page.south west);
+\fill[white, rounded corners] ([xshift=-15mm,yshift=-20mm]current page.north east) rectangle ([xshift=10mm,yshift=17mm]current page.south west);
+\end{tikzpicture}}%
+\sffamily\itshape\small\leftmark\ 
+\begin{tikzpicture}[xshift=.5\baselineskip,yshift=.25\baselineskip,remember picture, overlay,fill=nicered,draw=nicered]\fill (0,0) circle (3pt); \draw[semithick](0,0) -- (current page.east |- 0,0 );\end{tikzpicture}}{}{}
+\makeevenfoot{headings}{\tikz[baseline]\node[pagefooter]{\thepage};}{}{}
+\makeevenfoot{plain}{\tikz[baseline]\node[pagefooter]{\thepage};}
+%% Empty centre and right headers on even pages
+{}{}         
+
+%%%%%%%%%%%%%%%%
+%%% FOOTNOTE %%%
+%%%%%%%%%%%%%%%%
+% standard definition from memoir manual (p. 248) plus colors
+\renewcommand*{\footnoterule}{%
+	\color{nicered}
+	\kern-3pt%
+	\hrule width 0.4\columnwidth
+	\kern 2.6pt
+	\color{black}}
+
+	
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{apager}             
+\bibliographystyle{apager_dgps}
+ 

@@ -1,0 +1,12 @@
+\select@language {ngerman}
+\contentsline {chapter}{Inhaltsverzeichnis}{1}{section*.1}
+\contentsline {section}{\numberline {1.1}Funktionen definieren}{1}{section.1.1}
+\contentsline {subsection}{\numberline {1.1.1}Die Funktion \texttt {function}}{2}{subsection.1.1.1}
+\contentsline {subsection}{\numberline {1.1.2}Argumente hinzuf\IeC {\"u}gen}{4}{subsection.1.1.2}
+\contentsline {subsection}{\numberline {1.1.3}Objekte zur\IeC {\"u}ckgeben}{7}{subsection.1.1.3}
+\contentsline {subsection}{\numberline {1.1.4}Funktionen benennen}{10}{subsection.1.1.4}
+\contentsline {section}{\numberline {1.2}Philosphie des modulares Programmierens}{11}{section.1.2}
+\contentsline {section}{\numberline {1.3}Fortgeschrittene Themen}{12}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}Das Drei-Punkte-Argument (\texttt {...})}{13}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}Lazy Evaluation}{16}{subsection.1.3.2}
+\contentsline {subsection}{\numberline {1.3.3}Eigene Operatoren definieren}{19}{subsection.1.3.3}
