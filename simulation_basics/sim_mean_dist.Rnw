@@ -1,0 +1,62 @@
+                                               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SWEAVE
+\SweaveOpts{keep.source=TRUE}       % Ihaka, R. (2009). Customizing Sweave 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CUSTOMIZING SWEAVE 
+%%% from: Ihaka, R. (2009). Customizing Sweave to Produce Better Looking LATEX Output
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontsize=\footnotesize, formatcom=\color{codecolor}, xleftmargin=2em}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, formatcom=\color{codecolor}} 
+\DefineVerbatimEnvironment{Scode}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, formatcom=\color{codecolor}}
+
+\renewenvironment{Schunk}{\vspace{10pt}}{\vspace{8pt}}   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<<echo=F>>=
+options(width=75)         # set width to 60 characters
+options(continue=" ")     # remove continuation prompt
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Stichprobenverteilung des Mittelwerts}
+
+<<fig=T, height=4>>=
+mu <- 100
+s <- 10
+pop <- rnorm(1e3, mu, s)
+hist(pop, breaks=40, col="grey")
+@
+
+
+<<>>=
+sample_means <- function(pop, n, nrep=1000){
+  res <- rep(NA, nrep)
+  for (i in 1:nrep)
+    res[i] <- mean(sample(pop, n))  
+  res
+}
+@      
+
+<<>>=
+ns <- seq(10, 200, 40)
+l <- list()
+for (i in seq_along(ns)){
+  means <- sample_means(pop, ns[i])
+  l[[i]] <- data.frame(n=ns[i], means)  
+}       
+x <- do.call(rbind, l)
+@
+
+<<fig=T, height=4>>=  
+library(ggplot2)
+ggplot(x, aes(x=means)) + geom_histogram(binwidth=.2) +
+  facet_grid(. ~ n)
+@
+
+
+
+
+
+
+
+
+
+

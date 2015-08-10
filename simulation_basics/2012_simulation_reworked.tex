@@ -1,0 +1,96 @@
+\documentclass[12pt, a4paper]{article}
+%\documentclass[parskip,12pt,paper=a4,sffamily]{scrreprt}
+%\usepackage[latin9]{inputenc}
+%\usepackage[englisch, ngerman]{babel}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FONT SETTING %%%
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%\usepackage[applemac]{inputenc}
+\usepackage[onehalfspacing]{setspace}     % singlespacing
+%\setstretch{1.3}                         % for other than standard spacings
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% LAYOUT
+\usepackage[left=3cm,top=2cm,right=3cm,nohead,nofoot]{geometry}
+\setlength{\footskip}{2cm}      % Seitenzahl weiter n. unten, Achtung ggf. Problem bei Fussnoten
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+\usepackage[toc]{appendix}     % for named appendices
+\usepackage{hanging}            % for hanging indent environment
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Subject index 
+%\usepackage{makeidx}
+%\makeindex{}
+%\renewcommand{\indexname}{Subject index}      % change name of index page
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% FIGURE AND TABLE SETTINGS %%%
+\usepackage{booktabs}
+\usepackage{subfigure}
+\usepackage{rotating}
+\usepackage{float}
+\restylefloat{figure}     % H will mean directly here now
+\usepackage[]{caption}   %bold caption label
+\captionsetup[figure]{font=footnotesize, labelfont={footnotesize, bf}, labelsep=space}                                  % labelsep=newline
+\captionsetup[table]{font=footnotesize, labelfont={footnotesize, bf}, labelsep=space}
+\newcommand\T{\rule{0pt}{2.6ex}}          % global change toprule spaces table
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}}    % global change bottomrule table
+\setlength{\subfigtopskip}{5mm}           % set skips for subfigures and tables
+\setlength{\subfigcapskip}{1mm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% MATH
+\usepackage{amsmath}
+\usepackage{amssymb}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% HYPHENATIONS %%%
+% \hyphenation{OpenRepGrid}       % no hyphenation in these words
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% COMMANDS 
+\title{Simulationen mit \R{}}
+\author{Mark Heckmann} 
+
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+\newcommand{\R}{{\sffamily R}}
+
+\usepackage[usenames]{color}  % nut rausnehmen wenn driver HighlightWeaveDriver aus highlight package genutzt wird, da dieser auch usepackage{color} einfügt
+\definecolor{codecolor}{rgb}{0.400, 0.400, 0.400}
+
+
+\usepackage{Sweave}
+\begin{document} 
+    
+\maketitle
+
+\begin{abstract}
+Dieser Bericht soll Einsteigern anhand einiger Beispiel aufzeigen, wie mit \R{} Simulationen durchgeführt werden können.
+\end{abstract}
+
+\begin{singlespace}
+\tableofcontents
+\end{singlespace}
+% Preface   
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage 
+\include{sim_mean_dist}
+\newpage 
+\include{sim_variance_estimate}   
+\newpage
+\include{sim_pi}    
+\newpage
+\include{sim_correlation}
+\newpage 
+\include{sim_binomial_prop} 
+\newpage  
+\include{sim_coinflips} 
+\newpage
+\include{sim_monty_hall} 
+\newpage
+\include{sim_prisoner_problem} 
+\newpage
+\include{literature} 
+
+\end{document}
+

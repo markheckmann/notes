@@ -1,0 +1,184 @@
+                                               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% SWEAVE
+\SweaveOpts{keep.source=TRUE}       % Ihaka, R. (2009). Customizing Sweave 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CUSTOMIZING SWEAVE 
+%%% from: Ihaka, R. (2009). Customizing Sweave to Produce Better Looking LATEX Output
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontsize=\footnotesize, formatcom=\color{codecolor}, xleftmargin=2em}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, formatcom=\color{codecolor}} 
+\DefineVerbatimEnvironment{Scode}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, formatcom=\color{codecolor}}
+
+\renewenvironment{Schunk}{\vspace{10pt}}{\vspace{8pt}}   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+<<echo=F>>=
+options(width=75)         # set width to 60 characters
+options(continue=" ")     # remove continuation prompt
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section{Varianzschätzung}
+
+Die Definition der Varianz einer Zufallsvariable $X$ ist wohlbekannt. 
+
+\begin{equation}
+\operatorname{Var}(X) = \operatorname{E}\left( (X-\mu)^2\right)  
+\end{equation}  
+
+Sie berechnet sich wie folgt, wenn der wahre Mittelwert $\mu$ der Variablen $X$ bekannt ist. 
+
+\begin{equation} \label{eq:var_mu}
+  \sigma^2 = \frac{\sum{(x_i - \mu)^2}}{n}  
+\end{equation}
+
+Dies ist jedoch in der Regel nicht der Fall, so dass $\bar x$ geschätzt werden muss. So könnte man $\mu$ wird dann durch diesen Schätzwert ersetzen.
+
+\begin{equation} \label{eq:var_mean}
+  S^2 = \frac{\sum{(x_i - \bar x)^2}}{n}  
+\end{equation} 
+
+Hierbei handelt es sich jedoch nicht mehr um eine erwartungstreue Schätzung der Varianz von $X$. Dass dies nicht der Fall ist, soll nachfolgend simuliert werden. Hierzu programmieren wir zwei Funktionen. Eine die den Populationsmittelwert (Formel \ref{eq:var_mu}) und eine die den Stichprobenmittelwert(Formel \ref{eq:var_mean}) zur Schätzung der Varianz nutzt.  
+
+<<echo=F>>=
+set.seed(0)
+@
+
+<<>>=
+var_mu <- function(x, mu){   
+  sum((x - mu)^2) / length(x)  
+}   
+
+var_mean <- function(x){
+  xm <- mean(x)
+  sum((x - xm)^2) / length(x)
+}
+
+x <- rnorm(1e3, 100, 10)
+var_mu(x, 100)  
+var_mean(x)
+@ 
+
+Wir sehen, dass zwischen den beiden Schätzern Unterschiede bestehen können. An diesem Punkt ist es jedoch schwer zu sagen, ob diese Unterschiede einen Einfluss auf die Güte der Schätzung haben könnten. Aus diesem Grund simulieren wir viele Stichprobenziehungen.
+
+<<eval=F>>=
+compare_est <- function(nrep, n, mu, s){
+  res.mu <- rep(NA, nrep)         # Ergebnisvektor mu
+  res.mean <- rep(NA, nrep)       # Ergebnisvektor mean
+  counter <- 1                    # Zähler
+  for (i in 1:nrep){
+    cat("\r run", i)              # Ausgabe Durchlauf
+    flush.console()               # Zwischenspeicher entleeren
+    x <- rnorm(n, mu, s)          # Stichprobe ziehen
+    res.mu[i] <- var_mu(x, mu)    # Varianzschätzung mu
+    res.mean[i] <- var_mean(x)    # Varianzschätzung mean
+    counter <- counter + 1        # Zähler erhöhen 
+  }
+  c(var.mu= mean(res.mu),         # mu und mean Schätzung
+    var.mean=mean(res.mean))      # ausgeben
+}
+
+compare_est(1e3, 100, 100, 10)
+@ 
+
+<<echo=F>>=
+compare_est <- function(nrep, n, mu, s){
+  res.mu <- rep(NA, nrep)         # Ergebnisvektor mu
+  res.mean <- rep(NA, nrep)       # Ergebnisvektor mean
+  counter <- 1                    # Zähler
+  for (i in 1:nrep){
+    x <- rnorm(n, mu, s)          # Stichprobe ziehen
+    res.mu[i] <- var_mu(x, mu)    # Varianzschätzung mu
+    res.mean[i] <- var_mean(x)    # Varianzschätzung mean
+    counter <- counter + 1        # Zähler erhöhen 
+  }
+  c(var.mu= mean(res.mu),         # mu und mean Schätzung
+    var.mean=mean(res.mean))      # ausgeben
+}
+
+compare_est(1e3, 100, 100, 10)
+@
+
+Um eine besser Aussage treffen zu können simulieren wir die Daten erneut für verschiedene Stichprobenumfänge $n$.
+
+<<>>=
+ns <- seq(10, 100, 10)              # verschiedene n
+len.ns <- length(ns)                # Anzahl an n Werten
+rmat <- matrix(NA, len.ns, 2)       # Ergebnismatrix initialisieren
+for (i in 1:len.ns)
+  rmat[i, ] <- compare_est(1e3, ns[i], 100, 10)    
+r <- as.data.frame(rmat)            # in dataframe verwandeln
+names(r) <- c("var.mu", "var.mean") # Spalten benennen
+r <- cbind(n=ns, r)                 # n Spalte hinzufügen
+r
+@
+
+Es wird deutlich, dass die Schätzfunktion auf Basis der Mittelwertes die Varianz systematisch unterschätzt. Formel \ref{eq:var_mean} liefert somit keine erwartungstreue Schätzung von $\sigma^2$. Mit steigendem $n$ näheren sich die Schätzer jedoch an.  Welcher Zusammenhang besteht hierbei zwischen den beiden Schätzern? 
+
+<<>>=
+r <- transform(r, diff=var.mu - var.mean)
+r <- transform(r, n_diff=n * diff) 
+r
+@
+
+Die Differenz zwischen den Schätzfunktionen scheint systematisch mit $n$ zusammenzuhängen.
+@   
+
+Um aus Formel \ref{eq:var_mean} einen erwartungstreuen Schätzer zu machen muss diese um eine Korrekturfaktor $\frac{n}{n-1}$ erweitert werden. 
+
+<<>>=
+transform(r, corr.var.mean=var.mean *n / (n-1))
+@
+
+Die erwartungstreue Varianzschätzung auf Basis einer Stichprobe ist somit
+
+\begin{eqnarray} \label{eq:var_sample}
+  S^2 &=& \frac{n}{n-1} \frac{\sum{(x_i - \bar x)^2}}{n} \\  
+           &=& \frac{\sum{(x_i - \bar x)^2}}{n-1}.
+\end{eqnarray}
+
+\par
+\textbf{Berechnung mit Funktionen aus der \texttt{apply}-Familie}  
+
+Alternativ zu eienr Schliefe können auch Funktionen der \texttt{apply}-Familie genutzt werden. 
+
+<<>>=
+compare_est_2 <- function(reps, n, mu, s){
+  x <- replicate(reps, rnorm(n, mu, s))
+  vars_mu <- apply(x, 2, var_mu, mu)
+  vars_mean <- apply(x, 2, var_mean)
+  c(var.mu= mean(vars_mu),              # mu und mean Schätzung
+    var.mean=mean(vars_mean))           # ausgeben  
+}
+compare_est_2(1e3, 100, 100, 10)
+
+ns <- seq(10, 100, 10)
+res <- mapply(compare_est_2, reps=1e3, n=ns, mu=100, s=10)
+r <- as.data.frame(t(res))              # in dataframe verwandeln
+r <- cbind(n=ns, r)                     # n Spalte hinzufügen
+r
+@
+
+
+\textbf{Die analytische Herleitung der korrigierten Stichprobenvarianz}
+
+\begin{align} 
+    E (S_1^2)  &= \frac 1n \sum_{i=1}^n E\left( (X_i-\overline{X})^2 \right)= 
+  \frac 1n E \left(\sum_{i=1}^n (X_i-\mu+\mu-\overline{X})^2\right)\\
+  &=\frac1n E \left(\sum_{i=1}^n \left((X_i-\mu)^2 - 2(X_i-\mu)
+  (\overline{X}-\mu) + (\overline{X}-\mu)^2\right) \right)\\
+  &=\frac1n E\left(\sum_{i=1}^n (X_i-\mu)^2 - 2\sum_{i=1}^n(X_i-\mu)
+  (\overline{X}-\mu) + n(\overline{X}-\mu)^2\right) \\
+  &=\frac1n E\left(\sum_{i=1}^n (X_i-\mu)^2 - 2n(\overline{X}-\mu)
+  (\overline{X}-\mu) + n(\overline{X}-\mu)^2\right) \\
+  &=\frac1n E\left(\sum_{i=1}^n (X_i-\mu)^2 -n(\overline{X}-\mu)^2\right) \\
+  &=\frac1n \left(\sum_{i=1}^n E\left((X_i-\mu)^2\right) -nE\left((\overline{X}-\mu)^2\right)\right) \\
+  &=\frac1n \left(nVar(X)-nVar(\overline{X})\right) \\
+  &=Var(X)-Var(\overline{X}) = \sigma^2 - \frac{\sigma^2}{n} = \frac{n-1}{n}\,\sigma^2, \end{align} 
+
+
+ 
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
