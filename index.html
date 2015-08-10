@@ -56,7 +56,37 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 
 </head>
 
-<body>
+<body><style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img { 
+  max-width:100%; 
+  height: auto; 
+}
+</style>
+
+<!-- Navbar -->
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar">Hello</span>
+        <span class="icon-bar">World</span>
+        <span class="icon-bar">Here</span>
+      </button>
+      <a class="navbar-brand" href="./index.html">Notes</a>
+    </div>
+</nav>
+
 
 <style type = "text/css">
 .main-container {
@@ -134,5 +164,51 @@ $(document).ready(function () {
   })();
 </script>
 
-</body>
+</body><style>
+  /* Footer
+-------------------------------------------------- */
+
+.footer {
+  text-align: center;
+  padding: 30px 0;
+  margin-top: 40px;
+  border-top: 1px solid #e5e5e5;
+  background-color: #f5f5f5;
+  /* following properties are needed so footer spans whole page*/
+  left: 0;
+  right: 0;
+  width: 100%;
+  position: absolute;
+}
+.footer p {
+  margin-bottom: 0;
+  color: #777;
+}
+.footer-links {
+  margin: 10px 0;
+}
+.footer-links li {
+  display: inline;
+  padding: 0 2px;
+}
+.footer-links li:first-child {
+  padding-left: 0;
+}
+</style>
+
+<!-- Footer -->
+
+    <footer class="footer">
+      <div class="container">  
+        <p>Powered by <a href="http://getbootstrap.com/2.3.2/index.html" target="_blank">bootstrap</a>, <a href="http://bootswatch.com/" target="_blank">bootswatch</a>, and the marvellous <a href="http://rmarkdown.rstudio.com/" target="_blank">RMarkdown</a> and <a href="http://yihui.name/knitr/" target="_blank">knitr</a> packages.</p>
+        <p>All content on this site is licensed under <a href="http://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a>.</p>
+        <ul class="footer-links">
+          <li><a href="https://github.com/markheckmann/notes">Github</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="http://ryouready.wordpress.com">R you ready?</a></li>
+          <li class="muted">&middot;</li>
+          <li><a href="http://markheckmann.de">Mark Heckmann's blog</a></li>
+        </ul>
+      </div>
+    </footer>
 </html>
