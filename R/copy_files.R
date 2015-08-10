@@ -15,7 +15,8 @@ c("skalierung_thurstone/scaling_thurstone.html",
   "multiple_factor_analysis/rmd/multiple_factor_analysis.html",
   "ctt_spearman_brown/ctt_spearman_brown.html",
   "regression_partial/regression_partiell.html",
-  "svd_image_compression/rmd/svd_image_compression.html")
+  "svd_image_compression/rmd/svd_image_compression.html",
+  "colorize_png_pictograms/rmd/colorize_png_pictograms.html")
 
 
 base <- basename(html.files)
