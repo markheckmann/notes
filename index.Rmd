@@ -11,8 +11,9 @@ All the source code to produce the notes can be found in one of the folders of t
 
 * R
     + [QQ-plots in R vs SPSS](./qq_plot_by_hand.html)
+    + [Regular expressions in R](./regular_expressions/regex.pdf)
     + [Simulations with R (basics)](./simulation_basics/2012_simulation_reworked.pdf)
-     
+        
 * Stats
     + [Cross Validation](./cross_validation.html)
     + [Regression: Testing custom hypothesis](./regression_custom_hypotheses.html)
@@ -21,7 +22,7 @@ All the source code to produce the notes can be found in one of the folders of t
 * Methods 
     + [Thurstone Skalierung](./scaling_thurstone.html)
     + [KTT: Spearman Brown Korrektur](./ctt_spearman_brown.html)
-    
+
 * Linear algebra
     + [SVD: Image compression example](./svd_image_compression.html)
 
