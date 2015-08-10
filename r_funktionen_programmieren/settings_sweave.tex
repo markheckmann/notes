@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% CUSTOMIZING SWEAVE 
+%
+% code to control the spacing between Sinput and Soutput environments 
+% pronem occurs when using formatcom=\color{codecolor} in
+% DefineVerbatimEnvironment 
+% from http://tex.stackexchange.com/questions/19359/reduce-space-between-sinput-and-soutput
+%
+
+\newlength{\fancyvrbtopsep}
+\newlength{\fancyvrbpartopsep}
+\makeatletter
+\FV@AddToHook{\FV@ListParameterHook}{\topsep=\fancyvrbtopsep\partopsep=\fancyvrbpartopsep}
+\makeatother
+\setlength{\fancyvrbtopsep}{0pt}
+\setlength{\fancyvrbpartopsep}{0pt}
+
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontsize=\footnotesize, fontshape=sl,formatcom=\color{codecolor}, xleftmargin=2em}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, fontshape=n, formatcom=\color{codecolor}} 
+\DefineVerbatimEnvironment{Scode}{Verbatim}{fontsize=\footnotesize, xleftmargin=2em, fontshape=n, formatcom=\color{codecolor}}                      
+\renewenvironment{Schunk}{\vspace{10pt}}{\vspace{8pt}}

@@ -1,0 +1,677 @@
+\documentclass[12pt, a4paper,twoside,openany,x11names,svgnames]{memoir}
+\include{settings_layout}
+
+
+\setcounter {chapter} {1}
+
+\begin{document}
+\SweaveOpts{keep.source=TRUE}       % Ihaka, R. (2009). Customizing Sweave 
+% prefix.string=../pics
+\SweaveOpts{concordance=TRUE}
+
+\include{settings_sweave}
+
+<<echo=false>>=     
+options(width=75)         # width to 75 characters
+options(continue=" ")     # remove continuation prompt
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\setcounter{tocdepth}{3}
+
+\title{Funktionen in \R{} programmieren} 
+\author{Mark Heckmann} 
+
+\date{\today}
+
+\maketitle
+
+ \begin{abstract}
+Eine kurze Einführung zur Programmierung von Funktionen in \R{}.
+\end{abstract}
+
+
+\begin{singlespace}
+\tableofcontents
+\end{singlespace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Funktionen definieren}
+
+In den vorherigen Kapiteln ist bereits deutlich geworden, dass in \R{} neben  Datenstrukturen (Vektoren, Dataframes, Listen etc.) vor allem Funktionen eine zentrale Rolle spielen. In \R{} ist es relativ einfach, eigene Funktionen zu programmieren. Die meisten der Funktionen, die in Paketen verfügbar sind, sind ausschließlich in \R{} geschrieben. Einige nutzen ggf. noch C oder Fortran Code, wenn es nötig ist, sehr schnelle Funktionen zu schreiben. Für nahezu alle unserer Zwecke ist es jedoch völlig ausreichend \R{} zu beherrschen und \R{} Funktionen zu schreiben.
+
+Da \R{} ein Open Source Programm ist, kann der Code jeder Funktion betrachtet werden. Dies ist in \R{} in den meisten Fällen sehr einfach. Hierzu wird einfach der Funktionsname in die Konsole eingegeben und die Eingabetaste gedrückt. Betrachten wir zunächst den Code der Funktion \texttt{fisherz} aus dem Paket \texttt{psych}, die mit den eingegebenen Daten eine Fisher Z-Transformation durchführt.\footnote{Die ist nicht zu verwechseln mit der z-Transformation (kleines z), die eine Variable standardisiert. Die Stichprobenverteilungsfunktion von Korrelationen ist besonders für Korrelationen nahe $-1$ und $1$ sehr schief. Fishers Z-Transformation nähert die Verteilung wieder einer Normalverteilung an. Sie ist definiert als: $f(r)=0{,}5\ln\left(\frac{1+r}{1-r}\right)$, wobei $r$ die Produkt-Moment-Korrelation der Merkmale in einer Stichprobe ist.}
+
+<<>>=
+library(psych)
+fisherz
+@
+
+Der Code ist sehr kurz. Es ist nur die Code-Zeile in der Mitte, die die notwendigen Berechnungen vornimmt. Umrahmt wird die Berechnung von dem notwendigen Code, der \R{} anzeigt, dass es sich hier um eine Funktionsdefinition handelt. In der letzten Zeile steht die Ausgabe \texttt{<environment: namespace:psych>}. Die Bedeutung dieser Angaben ist für uns nicht weiter relevant. Sie zeigt uns jedoch, dass die Funktion aus dem Paket \texttt{psych} stammt.
+
+
+\subsection{Die Funktion \texttt{function}}
+
+Schauen wir uns den Code näher an. Der Code beginnt mit dem Wort \texttt{function}. Hierbei handelt es sich um eine \R{} Funktion, die dazu benutzt wird, \emph{neue Funktionen} zu erzeugen (siehe \texttt{help("function")}). Die Funktion \texttt{function} erlaubt in der runden Klammer die Angabe von Argumenten. Dieses Mal sind diese jedoch nicht vorher festgelegt, sondern können von uns definiert werden. In den darauffolgenden geschweiften Klammern steht der innerhalb der Funktion auszuführenden \R{} Code. Die allgemeine Form einer Funktionsdefinition ist somit folgende.
+
+\vspace{3mm}
+\begin{onehalfspace} 
+\hspace*{30mm}  \textbf{function} \textbf{(}\emph{Optionale Definition der Argumente} \textbf{)}\,\{  \\
+\hspace*{35mm}  \emph{R-Befehle} \\
+\hspace*{30mm}  \} 
+\end{onehalfspace} 
+\vspace{3mm}   
+
+Bisher haben die Funktionen die wir kennengelernt haben stets einen Vektor, einen Dataframe oder eine andere Datenstruktur zurückgegeben (\texttt{mean(1:10)} gibt z.\,B. einen Vektor zurück). Die Funktion \texttt{function} hingegen erzeugt auf Basis der Angaben die wir machen eine neue Funktion und gibt diese zurück. Um die zurückgegebene Funktion zu speichern, verfahren wir genauso wie um z.\,B. einen Vektor zu speichern, d.\,h. indem wir sie einem Objekt zuweisen. Erzeugen wir nun die einfachste mögliche Funktion, die weder Argumente hat noch etwas berechnet und weisen sie dem Objekt \texttt{funk} zu.
+
+<<>>=
+funk <- function(){}
+@
+
+Die Funktion \texttt{funk} kann nun wie jede andere Funktion aufgerufen werden, d.h. indem der Funktionsname gefolgt von den Argumenten innerhalb der runden Klammer angegeben werden. Da wir in diesem Fall keine Argumente definiert haben, müssen keine angegeben werden.
+
+<<>>=
+funk()
+@
+
+Die Funktion gibt ein leeres Objekt (\texttt{NULL}) zurück. Dies liegt daran, dass sie keine Berechnungen vornimmt und wir auch nicht definiert haben, was die Funktion zurückgeben soll. Da in \R{} ausnahmslos jede Funktion ein Objekt zurückgibt, gibt unsere Funktion nun ein leeres Objekt zurück. Offenkundig erfüllt die Funktion keinen Zweck und ist somit nutzlos. Sie stellt jedoch das Grundgerüst dar, mit dem wir nun weiterarbeiten wollen. 
+
+Unser nächstes Ziel ist es, dass die Funktion den Vektor \texttt{1:10} zurückgibt, wenn sie aufgerufen wird. Um zu definieren, welches Objekt die Funktion zurückgeben soll, wird die Funktion \texttt{return} genutzt. Sobald \texttt{return} aufgerufen wird, wird die definierte Funktion beendet und das Objekt, dass \texttt{return} als Argument übergeben wurde, wird von der Funktion zurückgegen. Üblicherweise steht \texttt{return} am Ende einer Funktion, da Code der nach dem Aufruf von \texttt{return} folgt, nicht mehr ausgeführt wird. Folgende Funktion gibt den Vektor \texttt{1:10} zurück.
+
+<<>>=
+funk <- function(){
+  return(1:10)
+}
+funk()
+@
+
+Bei der Funktion \texttt{fisherz} aus dem \texttt{psych} Paket (s.\,o.) fällt auf, dass in dem Code kein \texttt{return} Ausdruck enthalten ist. In diesem Fall nimmt \R{} an, dass das Objekt, das zurückgegeben werden soll, das Ergebnis der letzen Zeile des Codes ist. Es ist somit gleichgültig, ob um die \texttt{1:10} ein \texttt{return} geschrieben wird oder nicht. In \R{} ist es sehr üblich, die \texttt{return} Angabe in der letzen Zeile wegzulassen. Nachfolgende Funktion ist somit ist identisch mit dem vorherigen.
+
+<<>>=
+funk <- function(){
+  1:10
+}
+funk()
+@
+
+
+\subsection{Argumente hinzufügen}
+
+Was Funktionsargumente sind wurde in Kapitel \textbf{XXX} besprochen. Dort wurde auch gezeigt, dass es Argumente gibt, die stets angegeben werden müssen, damit eine Funktion ausgeführt werden kann. Dieser Argumenttyp wird im Folgenden \emph{nicht-optional} genannt. Für andere Argumente existieren Voreinstellungen und es ist \emph{optional}, diesen Argumenten beim Funktionsaufruf einen Wert zu übergeben. Auch ohne einen Wert für diese Argumente wird beim Funktionsaufruf kein Fehler verursacht. \footnote{So kann z.B. \texttt{rnorm()} nicht ohne Angabe eine Wertes für die Anzahl der zu erzeugenden zufälligen Werte ausgeführt werden und verursacht eine Fehler; \texttt{rnorm(10)} erzeugt 10 Werte mit den Standardeinstellungen \texttt{mean=0} und \texttt{sd=1}, wenn die keine Werte für die Argumente \texttt{mean} und \texttt{sd} übergeben werden.} \\
+
+\textbf{Nicht-optionale Argumente} 
+
+Fügen wir unserer Funktion nun ein erstes \emph{nicht-optionales} Argument hinzu. Unser Ziel ist, dass nicht \texttt{1:10} ausgegeben wird, sondern ein Objekt, das wir der Funktion \texttt{funk} beim Aufruf übergeben. Hierzu definieren wir innerhalb der runden Klammer die gewünschten Argumente der Funktion; in diesem Fall das Argument \texttt{x}. Im Code in der Funktion kann \texttt{x} nun wie jedes andere Objekt für Berechnungen etc. genutzt werden. Wir wollen es zunächst jedoch lediglich wieder ausgeben. Die Funktion tut somit nichts anderes, als das Objekt \texttt{x}, das ihr übergeben wird, wieder auszugeben.
+
+<<>>=
+funk <- function(x){
+  return(x)
+}
+funk(x=1:10)
+funk(c("a", "b", "c"))
+@
+
+Bei der Funktiondefinition haben wir festgelegt, dass die Funktion das Argumnet \texttt{x} erwartet. Wenn der User dieses nicht angibt, wird ein Fehler erzeugt.
+
+<<echo=T, eval=F>>=
+funk()
+@
+\vspace{-8mm}
+<<echo=F, results=verbatim>>=
+cat(try(funk()))
+@
+
+\vspace*{5mm}
+
+\textbf{Optionale Argumente} 
+
+Um ein Argument optional zu machen, ist es notwendig, dass das Argument in der Funktionsdefinition einen \emph{Standardwert} (engl. \emph{default value}) zugewiesen bekommt.\footnote{Diese Aussage ist im Grund nicht richtig, aber vorerst zum Verständnis hilfreich. Wann dies nicht zutrifft sehen wir im Abschnitt  \ref{sec:lazy_evaluation}.} Sollte der Nutzer für das entsprechende Argument beim Aufruf der Funktion keinen Wert übergeben, so wird der Standardwert verwendet. Ein Standardwert wird zugewiesen, indem hinter dem Argument ein Gleicheitszeichen gefolgt von den Standardwert eingesetzt wird. Im Folgenden erhält \texttt{x} die Zeichenkette \texttt{"mein standardwert"} als voreingestellten Wert. Nun kann die Funktion auch ohne \texttt{x} Argument aufgerufen werden, ohne einen Fehler zu generieren.
+
+<<keep.source=T>>=
+funk <- function(x="mein standardwert"){
+  return(x)
+}
+funk(1:10)               # Aufruf mit übergebenem Argument
+funk()                   # Aufruf ohne Argument
+@
+
+\vspace*{5mm}
+
+
+\textbf{Mehrere Argumente} 
+
+Eine Funktion kann mit beliebig vielen nicht-optionalen und optionalen Argumenten ausgestattet werden. Die Argumente werden hierzu durch ein Komma getrennt nacheinander aufgelistet. Die Namen der Argument müssen hierbei eindeutig sein. Nachfolgende Funktionen enthält ein nicht-optionales und zwei optionale Argumente mit Voreinstellung.
+
+<<>>=
+add <- function(eins, zwei=1, drei=2){
+  eins + zwei + drei
+}
+add(10)
+add(10, 20)
+add(10, drei=30)
+@
+
+
+\textbf{Argument name matching} 
+
+Wenn die Namen der Argument beim Aufruf der Funktion nicht ausgeschrieben werden, versucht \R{} die Argumente automatisch zuzuordnen (vgl. Abschnitt XXX). Dies gelingt, solange die Argumentbezeichnungen beim Aufruf eindeutig sind. Dieser Vorgang nennt sich \emph{argument name matching}. Hierzu ist es nicht nötig bei der Programmierung spezielle Schirtte zu uneternehmen, \R{} macht dies automatisch. Folgende Aufrufe sind somit identisch.
+
+<<eval=F>>=
+add(eins=10, zwei=5, drei=20)
+add(e=10, z=5, d=20)
+add(z=5, e=10, 20)
+@
+
+\vspace*{5mm}
+
+\textbf{Überprüfung der Argumente}
+
+Wir sind nun soweit, dass wir z.\,B. eine eigene Funktion zur Berechnung des Mittelwerts schreiben können. Hierzu definieren wir ein Argument \texttt{x}, das einen numerischen Vektor mit den Werten enthält, aus denen der Mittelwert berechnet wird. 
+
+<<>>=
+my.mean <- function(x) {
+  mw <- sum(x) / length(x)
+  return(mw)
+}
+@
+
+Diese Funktion funktioniert einwandfrei solange ein \emph{numerischer} Vektor übergeben wird. Es treten jedoch Problem auf, wenn dies nicht der Fall ist. Zum einem dann, wenn der Vektor \texttt{NA}s enthält sowie wenn er nicht numerisch ist und beispielsweise Zeichen enthält.
+
+<<keep.source=T>>=
+my.mean(1:5)                # funktioniert
+my.mean(c(1:5, NA))         # NA wird zurückgegeben
+@
+<<eval=F, keep.source=T>>=  
+my.mean(c(1:5, "test"))     # Zeichenkette verursacht Fehler
+@
+<<echo=F>>=
+cat(try(my.mean(c(1:5, "test"))))
+@
+
+Das erste Problem können wir eliminieren, indem wir den Vektor mit Hilfe der Funktion \texttt{na.omit} um die \texttt{NA}s bereinigen. Beim zweiten Fehler gibt es nichts zu bereinigen, da der Mittwelwert einer Zeichenketten keinen Sinn ergibt. Es ist hierbei jedoch üblich, am Anfang einer Funktion zu überprüfen, ob die Argumente den nötigen Anforderungen entsprechen. Ist dies nicht der Fall, sollte ein Fehler ausgegeben, um den Nutzer zu informieren und die Funktion abgebrochen werden. Hierzu dient die Funktion \texttt{stop}. 
+
+<<keep.source=T>>=
+my.mean <- function(x){
+  if (! is.numeric(x))              # enthält x Zahlen?
+    stop("'x' must be numeric")     # wenn nicht Fehlermeldung ausgeben
+  x <- na.omit(x)                   # NAs entfernen
+  mw <- sum(x) / length(x)
+  return(mw)
+}
+@
+\vspace*{-5mm}
+<<>>=
+my.mean(c(1:5, NA))         
+@
+\vspace*{-5mm}
+<<eval=F, keep.source=T>>=  
+my.mean(c(1:5, "test"))     
+@
+\vspace*{-8mm}
+<<echo=F>>=
+cat(try(my.mean(c(1:5, "test"))))
+@
+
+Im Code wird über die Funktion \texttt{is.numeric} zunächst geprüft, ob \texttt{x} numerisch ist. Wenn dies der Fall ist gibt die Funktion den Wert \texttt{TRUE} zurück. Uns interessiert jedoch der Fall, wenn \texttt{x} \emph{nicht} numerisch ist. In der \texttt{if}-Bedingung wird deshalb die Negation geprüft (\texttt{! is.numeric(x)}). Wenn \texttt{x} \emph{nicht} numerisch ist wird somit die Funktion \texttt{stop} aufgerufen. Diese sollte eine kurze Info enthalten, die dem Nutzer erklärt, warum ein fehler aufgetreten ist. 
+
+
+\subsection{Objekte zurückgeben}
+
+Der Zweck der meisten Funktionen ist, dass sie etwas zurückgeben. Der Objekttyp, den eine Funktion zurückgibt, ist beliebig. Es kann ein Vektor, eine Matrix, eine Liste aber auch ein beliebiges anderes Objekt sein. Eine Funktion kann jedoch stets nur \emph{ein} Objekt zur Zeit zurückgeben. Sollen mehrere Informationen zurückgegeben werden, so müssen diese in \emph{einem} \R{}-Objekt zusammengefasst werden.
+
+Nehmen wir an, wir möchten eine Funktion schreiben, die den Mittelwert als auch die Standardabweichung berechnet und diese zurückgibt. Hierzu können beide Werte berechnet und z.B. in Form eines (benannten) Vektors zurückgegeben werden.
+
+<<>>=
+mean_and_sd <- function(x) {
+  m <- mean(x)                      # Mittelwert berechnen
+  s <- sd(x)                        # Standardabweichung berechnen
+  res <- c(mean=m, sd=s)            # m und s in Vektor zusammenfassen
+  return(res)                       # Rückgabe des Vektors
+}
+mean_and_sd(1:4)
+@
+
+Die Funktion gibt nur \emph{ein} Objekt zurück, dass jedoch beide berechneten Werte enthält. Nach demselben Prinzip können auch noch mehr Informationen zurückgeben werden. Nehmen wir an, wir möchten, dass die Funktion zusätzlich die Werte selber zurückgibt. In diesem Fall ist ein Vektor nicht mehr geeignet. Eine Option bietet der Datentyp Liste. 
+
+<<>>=
+mean_and_sd <- function(x) {
+  m <- mean(x)                      # Mittelwert berechnen
+  s <- sd(x)                        # Standardabweichung berechnen
+  res <- list(x=x, mean=m, sd=s)    # alles in Liste zusammenfassen
+  return(res)                       # Liste zurückgeben
+}
+mean_and_sd(1:4)
+@
+
+\vspace*{5mm}
+
+\textbf{Die \texttt{return} Funktion}
+
+In Abschnitt XXX haben wir gesehen, dass der Funktion \texttt{return} jenes Objekt übergeben wird, das zurückgegeben werden soll. Im letzten Beispiel war dies das Objekt \texttt{res}. Weiterhin wurde darauf hingewiesen, dass es auch möglich ist, das \texttt{return} wegzulassen. In diesem Fall wird der letzte Ausdruck innerhalb des Funktionscodes zurückgegeben. Der letzte Ausdruck wird also so behandelt, als ob dieser innerhalb der \texttt{return}-Funktion steht. Nachfolgende Funktion ist somit identisch zum vorherigen Beispiel.
+
+<<>>=
+mean_and_sd <- function(x) {
+  m <- mean(x)                      # Mittelwert berechnen
+  s <- sd(x)                        # Standardabweichung berechnen
+  list(x=x, mean=m, sd=s)           # Liste erzeugen und zurückgeben
+}
+@
+
+Sobald die Funktion \texttt{return} aufgerufen wird die Ausführung des Funktionscodes beendet und das Objekt, dass \texttt{return} übergeben wurde, wird zurückgegeben. Somit ist es egal ob \texttt{return} am Ende des Funktioncodes noch einmal erscheint, denn es wird in beiden Fällen der letzte Ausruck zurückgegeben, mit oder ohne \texttt{return}. Anders verhält es sich jedoch, wenn \texttt{return} mitten in dem Funktionscode auftaucht. Denn aller Code der noch folgen sollte wird nicht mehr ausgeführt, wenn \texttt{return} \emph{aufgerufen} wird.
+
+<<>>=
+funk <- function() {
+  a <- 10
+  return(a)               # Funktion wird hier beendet
+  a <- 20
+}
+funk()
+@
+
+Obwohl der Wert von \texttt{a} am Ende des Codes \texttt{20} steht spielt dies keine Rolle mehr, da die Ausführung des Codes bereits bei \texttt{return} endet.  \\
+
+
+\textbf{Mehfaches \texttt{return} vermeiden}
+
+Da die Funktion \texttt{return} die Code Ausführung abbricht und ein Objekt zurückgibt, könnte man die Funktion mehrfach in den Code schreiben.
+
+<<>>=
+auswahl <- function(x) {
+  if (x > 0)
+    return(1)
+  if (x < 0)
+    return(-1)
+  if (x == 0)
+    return(0)
+}
+auswahl(5)
+auswahl(-5)
+@
+
+\texttt{return} taucht hier an verschiedenen Stellen auf. Bis auf wenige Fälle ist dieser Ansatz jedoch nicht zu empfehlen, da er eine Funktion schwer lesbar macht. Wenn der Funktionsocde sehr lang ist, ist es i.d.R. schwer nachvollziehbar, an welcher Stelle ein Objekt zurückgegeben wird. Es empfiehlt sich eher der Ansatz, das zurückzugebende Objekt jeweils zu zwischenzuspeichern und dann am Ende der Funktion zurückzugeben. Die vorherige Funktion könnten ebenso folgendermaßen aussehen.
+
+<<>>=
+auswahl <- function(x) {
+  if (x > 0)
+    res <- 1
+  if (x < 0)
+    res <- -1
+  if (x == 0)
+    res <- 0
+  return(res)
+}
+@
+
+\vspace*{5mm}
+
+\textbf{Unsichtbare Rückgabe von Werten}
+
+Beim Aufrufen einiger Funktionen fällt auf, dass in der Konsole gar nichts passiert. Z.B. gibt die Funktion \texttt{hist} zwar ein Histogramm aus, es wird jedoch kein Objekt in der Konsole ausgegeben.
+
+<<eval=false>>=
+x <- rnorm(100)
+hist(x)
+@
+
+Dieses Verhalten ist bei vielen Grafikfunktionen anzutreffen. Die Funktion \texttt{hist} wird schließlich nur aufgerufen, um eine Grafik zu erzeugen, nicht um etwas in der Konsole anzuzeigen. Es ist jedoch ein Irrtum anzunehmen, dass die Funktion \texttt{hist} nichts zurückgibt (denn jede Funktion tut dies). Die Rückgabe ist in diesem Fall nur unsichtbar. Eine unsichtbare Rückgabe kann erreict werden, indem anstelle von \texttt{return} die Funktion \texttt{invisible} genutzt wird. Die Funktion ist identisch mit \texttt{return} mit dem einzigen Unterschied, dass das zurückgegeben Objekt \emph{nicht} in der Konsole ausgegeben wird. Folgende Funktion gibt die Werte 1 bis 10 unsichtbar zurück.
+
+
+<<>>=
+funk <- function() {
+  invisible(1:10)
+}
+funk()
+@
+
+Dass die Funktion \texttt{funk} trotzdem ein Objekt zurückgibt wird erst deutlich, wenn wir es speichern und danach in der Konsole ausgeben.
+
+<<>>=
+a <- funk()
+a
+@
+
+
+
+\subsection{Funktionen benennen}
+
+\textbf{Sprechende Namen vergeben}
+
+Es ist hilfreich, Funktionen \emph{sprechende Namen} zu geben. Dies sind Namen, die aus sich heraus beschreiben, was eine Funktion macht. Eine Funktion mit dem Namen \texttt{werteBerechnen} ist z.B. nichtssagend. Es bleibt unklar, was genau sie berechnet. Bei der Funktion \texttt{mean} hingegen ist es eindeutig. Man wird schnell merken, dass der eigene Code furchtbar unleserlich wird, wenn die Funktionen keine sprechenden Namen tragen. Ziel ist es schließlich, den Programmcode \emph{lesen} zu können, ohne erst an jeder Stelle nachschlagen zu müssen, was eine Funktion genau macht.
+
+Zwar sind sprechende Namen sehr hilfreich, sie können jedoch auch sehr schnell sehr lang werden. Hier muss man einen Mittelweg zwischen Verständlichkeit und Länge des Namens finden. Die Funktion \verb+replace_all_values_in_string+ ist verständlich aber zugleich sehr lang. Viele Programmierer nutzen deshalb Akronyme. Die Funktion könnte z.B. stattdessen \verb+str_replace_all+ heißen.\footnote{Dieser Name ist nicht zufällig gewählt sondern ist eien Funktion aus dem \texttt{stringr} package, die genau diese Aufgabe hat.} Auch die Funktion \texttt{rnorm}, die uns schon häufig begegnet ist, ist ein Akronym: \texttt{r} steht für \emph{random}, \texttt{norm} für \emph{normal distribution}. \\
+
+
+\textbf{Lesbarkeit der Namen erhöhen}
+
+Um die Lesbarkeit eines längeren Funktionsnamen zu erhöhen, werden i.d.R. zwei verschiedene Schreibvarianten genutzt. Die erste Variante ist die gebräuchlichere und nennt sich \emph{CamelCase} (deu. \emph{Binnenmajuskel}). Der Name spielt auf die  Höcker eines Kamels an, wobei sich auf dem Rücken des Tieres hohe und tiefe Stellen abwechseln. Bei CamelCase wechseln sich im Wort analog Groß- und Kleinbuchstaben ab. Jeder neuer Bestandteil eines Funktionsnamens bekommt einen Großbuchstaben. Der erste Buchstabe ist üblicherweise ein Kleinbuchstabe. Die CamelCase Variante der Funktion \verb+str_replace_all+ wäre somit \texttt{strReplaceAll}.
+
+Die zweite weniger übliche Variante ist die Nutzung von Unterstrichen um den Funktionsnamen leserlich zu gestalten und wird \emph{snake\textunderscore{}case} genannt. An der Stelle vor der beim CamelCase ein Großbuchstabe steht, steht stattdessen ein Unterstrich. Großbuchstaben sind dann im Namen nicht enthalten (z.B. \verb+str_replace_all+).
+
+Ich selber wurde mit der CamelCase Variante sozialisiert, bevorzuge inzwischen jedoch Variante mit den Unterstrichen, da ich sie für besser lesbar halte. Hier scheiden sich jedoch die Geister. 
+
+
+
+\section{Philosphie des modulares Programmierens}
+
+Als Anfänger der (\R{})-Programmierung neigt man dazu, sehr langen Funktionscode zu schreiben und teilweise viele Einzelschritte in \emph{eine} große Funktion zusammenzufügen. Die Folge davon ist, dass der Code schnell unübersichtlich und somit schwer lesbar und schwer zu warten ist. Um diesem Nachteil entgegenzuwirken wird in vielen Programmiersprachen versucht \emph{modular} zu programmieren. Dies bedeutet, dass logisch zusammengehörige Teile eines Ccodes in einzelne Module zusammengefasst werden. In \R{} kann ein Modul z.B. eine Funktion sein, die eine eigene klar definierte Aufgabe übernimmt.
+
+Unser Ziel sei es, eine Funktion schreiben, die die Varianz für einen numerischen Vektor berechnet.\footnote{Die Varianzformel lautet $s^2=\frac{\sum (x-\bar x)^2}{n-1}$.} Nehmen wir weiter an, dass uns die Funktion \texttt{mean} hierzu nicht zur Verfügung steht. Eine Lösung wäre folgende.
+
+<<>>=
+varianz <- function(x) {
+  mw <- sum(x) / length(x)
+  sum((x - mw)^2) / (length(n) - 1)
+}
+@
+
+Zwar ist der Code hinreichend einfach, so dass es nicht nötig wäre, diesen weiter aufzusplitten. Er kann uns jedoch dienen, um das Grundprinzip zu veranschaulichen. 
+\\
+
+\textbf{Zusammengehörige Programmteile zu Einheiten zusammenfassen}
+
+Einen Mittelwert zu berechnen ist eine Aufgabe, die immer wieder vorkommt. Es ist somit sinnvoll, diesen Schritt als eine eigene Einheit zu begreifen und ihn als unabhängiges Modul zu programmieren. Die Zusammenfassung in eine Einheit wird erreicht, indem wir aus der Berechnung des Mittelwerts eine eigenständige Funktion machen (was in \R{} ja ohnehin der Fall ist). 
+
+<<>>=
+mittelwert <- function(x) {
+   sum(x) / length(x)
+}
+@
+<<>>=
+varianz <- function(x) {
+  mw <- mittelwert(x)
+  sum((x - mw)^2) / (length(n) - 1)
+}
+@
+
+Die Berechnung des Mittelwerts ist nun in eine eigene Funktion ausgegliedert. Dies macht den Code von der Varianzfunktion etwas lesbarer. Zum anderen haben wir nun erreicht, dass wenn wir Änderungen in der Funktion \texttt{mittelwert} vornehmen können, ohne dies in jeder Funktion die die Funktion \texttt{mittelwert} nutzt, einzeln tun zu müssen. Dies wäre z.B. dann relevant, wenn wir eine Möglichkeit fänden, den Mittelwert schneller zu berechnen als mit obigen Code. 
+
+Die Vorteile einer modularen Programmierweise werden i.d.R. erst mit der Zeit deutlich, wenn man beginnt, längere Funktionen oder Pakete zu programmieren. Die ausgegliderten Teile haben dann anders als in unserem Beispiel mehrere Dutzend Zeilen Code, so dass der Übersichtliehkeitsgewinn beträchtlich ist. Wenn man mit dem Prgramieren beginnt ist es zunächst unklar, wann es sinnvoll ist, einen Programmteil in separate Funktionen auszugliedern. Mit der Zeit gewinnt man jedoch ein Gefühl dafür. Meine Erfahrung ist, dass man zu Beginn viel zu wenig von dem Gestaltungsprinzip des modularen Programmierens Gebrauch macht. Versuchen Sie möglichst früh diesem Prinzip zu folgen.
+
+
+
+\section{Fortgeschrittene Themen} \label{sec:funktionen_fortgeschritte_themen}
+
+Sie haben bisher die Grundlagen kennengelernt, um eigene Funktionen in \R{} zu schreiben. In diesem Kapitel soll es darum gehen, ein besseres Verständnis von der Funktionsweise und den Möglichkeiten bei der Funktionsprogrammierung zu gewinnen.
+
+In dem Abschnitt das *Drei-Punkte Argument* wird eine besonderer Argumentetyp vorgestellt, der nicht nur eine sondern beliebig viele Argument-Werte-Paare aufnehmen kann.
+
+In dem Teil *Lazy Evaluation* wird auf eine grundlegende Funktionweise eingegangen, wie \R{} auszuwertende Ausdrücke behandelt.
+
+
+
+\subsection{Das Drei-Punkte-Argument (\texttt{...})}
+
+Im Abschnitt wurde erklärt welche Bedeutung das Drei-Punkte-Argument (\dots) beim Funktionsaufruf hat.\footnote{Die korrekte Bezeichnung ist hier eigentlich \emph{Ellipse} (eng. \emph{ellipsis}). Viele Leute schreiben jedoch \emph{dot-dot-dot} oder \emph{dots}  argument, so dass Sie unter \emph{ellipsis} nicht immer fündig werden.} Hier soll die Frage geklärt werden, wie das dots-Argument innerhalb eigener Funktionen nutzen kann.
+
+Das Drei-Punkte-Argument unterscheidet sich im Handling ein wenig von den Verfahren für Standardargument. Beim Handling können wir zwei Fälle unterscheiden. 
+Im ersten Fall wird das dots-Argument dazu genutzt viele Argumente-Werte-Paare an eine weitere Funktion weiterzugeben. Im zweiten Fall wird gezielt auf einzelne Argumente-Werte-Paare zugegriffen.
+
+\vspace*{5mm}
+
+\textbf{Viele Argumente-Werte-Paare an eine Funktion weitergeben}
+
+Nehmen wir an, wir wollen eine Funktion schreiben, die eine Berechnung anstellt und einen Wert zurückliefert. Wir wollen in der Funktion angeben können, auf wieviele Stellen gerundet werden soll. Hierzu fügen wir ein Argument \texttt{digits} ein, dass die Voreinstellung \texttt{1} hat.
+
+<<>>=
+addition_1 <- function(x, y, digits=1) {
+  s <- x + y
+  round(s, digits=digits)
+}
+addition_1(2.123, 1.123, digits=2)
+@
+
+Wir hätten dieses Verhalten alternativ mittels des dots-Arguments erreichen können. 
+
+<<>>=
+addition_2 <- function(x, y, ...) {
+  s <- x + y
+  round(s, ...)
+}
+addition_2(2.123, 1.123, digits=2)
+@
+
+An der Stelle wo vorher das Argument \texttt{digits} stand stehen nun die drei Punkte. Dies hat zur Folge, dass alle Argument-Werte-Paare, die hinter das Argument \texttt{y} geschrieben werden, in den drei Punkten gespeichert werden. Die drei Punkte können innerhalb einer Funktion an andere Funktionen weiteregegeben werden. In unserem Fall geben wir die Punkte an die Funktion \texttt{round} weiter. Die Funktion \texttt{round} durchsucht nun alle Argument-Wert-Paare in den drei Punkten und nutzt automatisch all jene, die sie kennt. In diesem Fall ist es nur das Argument \texttt{digits}, das \texttt{round} kennt. Würden in den Punkten weitere Argumentenamen stehen, über die \texttt{round} ebenfalls verfügt würden diese auch von \texttt{round} genutzt werden. Auch hier greift im übrigen das \emph{argument name matching}. Selbst wenn \texttt{digits} nicht ganz ausgeschrieben wird, erkennt \texttt{round}, dass der Anfang \texttt{dig} zu dem Argument \texttt{digits} gehört.
+
+<<>>=
+addition_2(2.123, 1.123, dig=3)
+@
+
+In welchen Situation ist es hilfreich das dots-Argument zu nutzen? Generell dann, wenn es sich um sehr viele Funktionsargument handelt, die wir weitergeben wollen. Dies ist z.B. häufig bei der \texttt{plot} Funktion der Fall. Plot verfügt über die Argumente \texttt{x}, \texttt{y} und \texttt{...}.
+
+<<>>=
+args(plot)
+@
+
+Im Hilfetext von \texttt{plot} steht, dass die Argumente zu weiteren Funktionen weitergegeben werden. Eine dieser Funktionen ist \texttt{par}, über die viele Grafikeinstellungen festgelegt werden können (siehe \verb+?par+). Angenommen wir wollen eine Funktion schreiben, die sich genauso wie \texttt{plot} verhält, als Voreinstellung jedoch die Farbe blau verwendet.
+
+<<eval=false>>=
+blue_points <- function(x, y, col="blue") {
+  plot(x, y, col=col)
+}
+blue_points(1:10, 1:10)
+@
+
+Das Problem ist, dass es in der Funktion \texttt{blue\textunderscore{}points} nun nicht mehr möglich ist, weitere Argumente zu übergeben. Wollten wir z.B. den plot character verändern (Argument \texttt{pch}), so müssen wir dafür sorgen, dass auch dieser an \texttt{plot} weitergegeben wird. Wir könnten hierzu \texttt{blue\textunderscore{}points} ein weiteres Argument \texttt{pch} hinzufügen. Es wäre jedoch mühselig, dies für jedes einzelne Argument zu tun. Einfacher ist es, das dots-Argument zu nutzen.
+
+<<eval=false>>=
+blue_points <- function(x, y, col="blue", ...) {
+  plot(x, y, col=col, ...)
+}
+blue_points(1:10, 1:10, pch=16)
+@
+
+An die Funktion \texttt{blue\textunderscore{}points} können nun beliebig viele Argumente übergeben werden, die alle an \texttt{plot} weitergegeben werden.Die Funktion ist identisch mit \texttt{plot}, mit dem einzigen Unterschied, dass sie nun \texttt{col="blue"} als Voreinstallung besitzt.
+
+
+\vspace*{5mm}
+
+\textbf{Auf Argumente-Werte-Paare direkt zugreifen}
+
+Bisher wurde der häufigste Nutzungsfall des dots-Arguments behandelt, bei dem der Inhalt der dots komplett an eine andere Funktion weitergeben wird. Eine weitere Möglichkeit besteht darin, auf den Inhalt der dots direkt zurückzugreifen. Hierzu müssen die dots zunächst in eine Liste umgewandelt werden. Dies geschieht durch den Befehl \texttt{list(...)}. Es wird eine Liste erzeugt, die alle Argument-Werte-Paare enthält, die in den dots enthalten waren.
+
+<<>>=
+show_dots <- function(...) {
+  dots <- list(...)
+  dots
+}
+show_dots(a="eins", b=1:5)
+@
+
+Die Liste mit dem Inhalt der dots wird i.d.R. \texttt{dots} genannt. IM Folgenen wird auf das Argument \texttt{y} zugegriffen.
+
+<<>>=
+f <- function(...) {
+  dots <- list(...)
+  dots$y
+}
+f(y=1)
+@
+
+In diesem Zusammenhang ist weiterhin die Funktion \texttt{hasArg} besonders nützlich. \texttt{hasArg} überprüft, ob innerhalb des Funktionsaufrufs ein bestimmtes Argument zu finden ist. Im Folgenden wird nach dem Argument \texttt{y} geschaut. Wenn dieses vorhanden ist wird.
+
+<<eval=false>>=
+get_y <- function(...) {
+  if (hasArg(y)) {
+    dots <-list(...) 
+    dots$y
+  } else {
+    "no argument y"
+  }
+}
+get_y(x=1)
+get_y(y=1)
+@
+
+
+\subsection{Lazy Evaluation} \label{sec:lazy_evaluation}
+
+Schreiben wir nun eine weitere Funktion, die wir in den nachfolgenden Schritten erweitern und verbessern werden. Als D-Mark Nostalgiker wünschen wir uns eine Funktion, die Euro in D-Mark umrechnet. Der Wechselkurs beträgt $1\,Euro = 1.95583\,DM$. Dies könnte wie folgt aussehen.
+
+<<>>=
+euro_zu_dm <- function(x){
+  x * 1.95583  
+}
+euro_zu_dm(1)
+@
+
+Wir wollen die Funktion noch ein wenig verbessern, indem wir sowohl die DM als auch die Euroangabe auf zwei Nachkommastellen gerundeter zugleich ausgeben.
+
+<<>>=
+euro_zu_dm <- function(x){
+  dm <- 1.95583 * x
+  r <- c(Euro=x, DM=dm)
+  round(r, 2)
+}
+euro_zu_dm(1)
+@
+
+Wir sind noch nicht ganz zufrieden, denn wir würden die Umrechnung auch gerne in die andere Richtung vornehmen können. Hierzu ist es hilfreich, wenn wir zunächst betrachten, wie \R{} die übergebenen Argumente auswertet. Machen wir einen kurzen Exkurs, bevor wir die Funktion verbessern. Wir haben vorhin gesagt, dass \R{} einen Fehler ausgibt, wenn Argumente, die keine Standardeinstellung haben, im Funktionsaufruf nicht angegeben werden. Nachfolgende Funktion \texttt{foo} hat zwei Argumente, \texttt{x} und \texttt{y}. Beide verfügen über keine voreingestellten Werte. Dementsprechend würden wir davon ausgehen, dass nachfolgender Funktionsaufruf einen Fehler erzuegt.
+
+<<>>=
+foo <- function(x, y){
+  return(x)
+}
+foo(x=100)
+@
+
+Warum ist dies nicht der Fall? Der Grund hierfür liegt darin, dass \R{} beim Durchlaufen der Funktion kein Mal auf das Objekt \texttt{y} trifft. Denn \texttt{y} wird nirgendwo im Code benutzt. \R{} versucht jedoch erst dann den Wert des Objekts \texttt{y} zu erhalten, sobald es dieses, z.B. für eine Berechnung, benötigt. Vorher fällt es \R{} nicht auf, dass \texttt{y} nicht vorhanden ist. \R{} ist suzusagen \emph{faul} und wird erst aktiv, wenn es muss. Es schaut nicht gleich eifrig beim Aufruf einer Funktion, ob alle Argumente da sind, sonden erst später. Dieser Mechanismus wird als \emph{lazy evaluation} bezeichnet. 
+
+Verdeutlichen wir dies an einem zweiten Beispiel. Nachfolgende Funktion addiert die Werte der Argumente von \texttt{x} und \texttt{y} wenn \texttt{x} kleiner als Null ist. Ansonsten gibt es einfach den Wert von \texttt{x} wieder aus. 
+
+<<>>=
+f <- function(x, y){
+  if (x < 0) {
+    r <- x + y
+  } else {
+    r <- x
+  }
+  r
+}
+@
+
+Für die Auswertung der Argument innerhalb der Funktion bedeutet dies, dass \R{} den Wert \texttt{y} nur dann auswerten will, wenn \texttt{x} kleiner als Null ist. Nur in diesem Fall wird ein Fehler generiert.
+
+<<>>=
+f(x=1)
+@
+\vspace*{-5mm}
+<<eval=F>>=
+f(x=-1)
+@
+\vspace*{-8mm}
+<<echo=F>>=
+cat(try(f(x=-1)))
+@
+
+Der Mechanismus der \texttt{lazy evaluation} hat interessante Konsequenzen, die wir uns zunutze machen können. Nachfolgende Funktion gibt die Argumnet \texttt{x} und \texttt{y} aus. Das Argument \texttt{x} muss hierbei angegeben werden. Für den Fall jedoch, dass das der Wert für \texttt{y} fehlt, wird dieser aus dem Wert des Arguments \texttt{x} berechnet. 
+
+<<>>=
+f <- function(x, y=x/2){
+  c(x=x, y=y)  
+}
+f(1)
+@
+
+Warum funktioniert dies? \R{} will den Vektor, der zurückgegen werden soll erzeugen. In diesem ist das Objekt \texttt{y} enthalten. \R{} sucht nun nach dem Objekt und findet es bei den vordefinierten Argumenten. Die Voreinstellung ist, dass \texttt{y} die Hälfte von \texttt{x} ist. \texttt{x} ist ebenfalls bekannt und somit kann \R{} nun auch den Wert für \texttt{y} berechnen. 
+
+Dieser Ansatz kann erweitert werden, indem das Argument \texttt{x} in der Voreinstallung durch \texttt{y} und \texttt{y} durch \texttt{x} definiert wird.
+
+<<>>=
+f <- function(x=2*y, y=x/2){
+  c(x=x, y=y)  
+}
+@
+
+In diesem Fall ist es gleich, welches der Argumente vom Nutzer ausgelassen wird. Wenn es \texttt{x} ist wird \texttt{y} aus \texttt{x} berechnet, wenn es \texttt{y} ist wird \texttt{x} aus \texttt{y} berechnet. Auch beide Argumente können natürlich angegeben werden. In diesem Fall wird keines der beiden aus dem anderen berechnet.
+
+<<>>=
+f(y=1)
+f(x=2)
+f(2,1)
+@
+
+Kehren wir nun zu unserer Euro-Umrechnungs-Funktion zurück und machen uns den \texttt{lazy evaluation} Mechanismus zu nutze. Hierzu schreiben wir die Umwandlung der Währungen direkt in die Voreinstellung der Argumente. Nun ist es egal, ob Euro oder DM angegeben wird. Die Umwandlung funktioniert nun in beide Richtungen.
+
+<<>>=
+euro_dm_converter <- function(euro = dm / 1.95583, 
+                              dm = 1.95583 * euro){
+  c(Euro=euro, DM=dm)
+}
+euro_dm_converter(euro=1)
+euro_dm_converter(dm=1)
+@
+
+In einem letzten Schritt ersetzen wir noch den Wechselkurs durch ein Objekt, dass im Code definiert wird, so dass die Funktionsdefinition etwas übersichtlicher wird.
+
+<<>>=
+euro_dm_converter <- function(euro = dm / w, 
+                              dm = w * euro){
+  w <- 1.95583
+  round(c(Euro=euro, DM=dm), 2)
+}
+euro_dm_converter(euro=1)
+euro_dm_converter(dm=1)
+@
+
+
+\subsection{Eigene Operatoren definieren}
+
+Operatoren wie \verb!+!, \verb!-!, \verb!*!, \verb!/! etc. sind in \R{} ebenfalls Funktionen. Durch die Schreibweise \texttt{ (1 + 1)} wird dies häufig nicht deutlich. Wir können die Funktionen jedoch auch wie jede andere aufrufen (d.h. mit Hilfe der runden Klammern), was die Gleichheit beider Varianten deutlich macht. Hierzu wird der Name des Operator in Anführungsstriche gesetzt.
+
+<<>>=
+"+"(1, 2)         # entspricht 1 + 2
+"*"(1, 2)         # entspricht 1 * 2
+@
+
+Dies betrifft z.B. auch den Zugriffsoperator \texttt{[}. 
+
+<<>>=
+"["(letters, 1:3)       # entspricht letters[1:3]
+@
+
+Auch die Dokumentation der Funktionen kann auf diese Weise aufgerufen werden.
+
+<<eval=F>>=
+?"+"
+@          
+    
+Neben den Standardoperatoren ist es in \R{} möglich, eigene Operatoren zu definieren. Nehmen wir an, es sei unser Ziel, eine Funktion zu schreiben, die feststellt, ob die Werte eines Vektor innerhalb eines bestimmten Wertebereichs liegen. Hierzu definieren wir die Fnktion \texttt{inside} wie folgt.
+
+<<>>=
+inside <- function (x, limits) {
+	x >= min(limits) & x <= max(limits)
+}
+@
+
+Überprüfen wir nun ob, die Werte 1 bis 5 zwischen 2 und 4 liegen.
+
+<<>>=
+inside(1:5, c(2,4))
+@
+
+Das Ziel ist nun einen Operator mit derselben Funktion zu definieren, der wie das Plus- oder Multiplikationszeichen genutzt werden kann. Hierzu wird  der Name des neuen Operators in Prozentzeichen gesetzt. Diese zeigen \R{} an, dass es sich um einen Operator handelt.
+
+<<>>=
+"%inside%" <- inside
+@
+
+Danach kann der Operator \texttt{\%inside\%} in derselben Weise wie ein Plus-Zeichen benutzt werden.
+
+<<>>=
+1:5 %inside% c(2,4)
+@
+
+Nutzen wir den neu erschaffenen Operator nun für die Auswahl von Fällen aus einem Datensatz. Wir wollen aus dem Datensatz \texttt{anscombe} alle Fälle auswählen, bei denen die \texttt{x1} Werte zwischen 7 und 10 annimmt. Klassicherweise würde man wie folgt vorgehen. 
+
+<<eval=false>>=
+subset(anscombe, x1 >= 7 & x1 <= 10)
+@
+
+Mit dem neuen \texttt{\%inside\%} Operator ist nun auch Folgendes möglich.
+
+<<eval=false>>=
+subset(anscombe, x1 %inside% c(7,10))
+@
+
+\end{document} 
