@@ -1,0 +1,566 @@
+%%% COMMANDS %%%
+% Sweave("/Users/markheckmann/Documents/R/R-teaching/tex/regression.snw")
+
+\documentclass[a4paper]{report}
+%\documentclass[parskip,12pt,paper=a4,sffamily]{scrreprt}
+%\usepackage[latin9]{inputenc}
+%\usepackage[englisch, ngerman]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[left=3cm,top=2cm,right=3cm,nohead,nofoot]{geometry}
+\setlength{\footskip}{2cm}      % Seitenzahl weiter nach unten, Achtung ggf. Problem bei Fussnoten
+
+\hyphenation{OpenRepGrid}       % no hyphenation in these words
+
+%\VignetteIndexEntry{Persistent representations}
+%\VignettePackage{grid}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\pkg}[1]{{\normalfont\fontseries{b}\selectfont #1}}
+%\newcommand{\org}{\pkg{OpenRepGrid}}
+\newcommand{\R}{{\sffamily R}}
+\newcommand{\org}{{\sffamily OpenRepGrid}}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+\SweaveOpts{keep.source=TRUE}       % Ihaka, R. (2009). Customizing Sweave 
+
+
+\title{Reguläre Ausdrücke}
+\author{Mark Heckmann}
+\begin{document}
+  
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% from: Ihaka, R. (2009). Customizing Sweave to Produce 
+%%%       Better Looking LATEX Output
+\DefineVerbatimEnvironment{Sinput}{Verbatim} {xleftmargin=2em} \DefineVerbatimEnvironment{Soutput}{Verbatim}{xleftmargin=2em} \DefineVerbatimEnvironment{Scode}{Verbatim}{xleftmargin=2em} \fvset{listparameters={\setlength{\topsep}{0pt}}} \renewenvironment{Schunk}{\vspace{\topsep}}{\vspace{\topsep}}
+
+<<echo=false>>=     
+options(width=75)         # width to 60 characters
+options(continue=" ")     # remove continuation prompt
+@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  
+\maketitle
+
+%\begin{abstract}
+%\end{abstract}
+
+\tableofcontents
+% Preface
+
+REGEX : Mastering regular expressions
+
+Dieser Abscnitt dient als kurze EInführung in regex und stellt die wichtisgten  \R{} Funktionen vor, die regex nutzen. Es ist jedoch keine umfassende Einführung oder Erklärung. Hierzu ist e ratsam eine Standardbuch über regex zu lesen. Ein sehr gutes Werk, an das auch folgende Einführung angelehnt ist, ist z.B. Friedl (XXX).
+
+Idee ist fast jeden bereits aus Betriebessystemen Syntax bekannt.
+In DOS oder Unix ist es möglich, alle Dateien, die z.B. die Endung \texttt{.txt} haben folgendrmaßen anzusprechen: \texttt{*.txt}.
+Das Sternechen steht hierbei für eine oder einer Reihe beliebiger Zeichen.
+Solche Filename patter werden \emph{file globs} oder \emph{wildcards} genannt. In Betriebssystemen gibt es nur wenige Zeichen, die eine derart besondere Bedeutung haben. \emph{regular expressions} sind eine Pattern Sprache, die über weit mehr Möglichkeiten verfügt solche Wortmuster zu defineren.
+
+* und andere Zeichen mit besonderer Bedeutung werde \emph{metacharacters} genannt. Die übrigen Zeichen werden \emph{literals} genannt. 
+
+In regular expression können die große Anzahl kleiner metacharacter in sehr vielfältiger eise zu einem regulären Ausruck zusammengesetzt werden. So entstehen Ausrücke die eine komplexe Funktion erfüllen.
+
+Der Bergriff \emph{Reguläre Ausdrücke} heißt auf Englisch \emph{regular expressions}. Es ist übrlich, diesen mit dem \emph{Akronym} regex abzukürzen. So wird ab hier auch in diesem Buch verfahren.
+
+\textbf{Metacharacters}
+
+Eineige Zeichen haben in innerhka von regulären Ausdrücken eine besondere Bedeutung. Diese werden Metacharacters genannt. Darüber hinaus hängt die Bedeutung eininger Metacharacters davon ab, wo genau im regulären Ausdruck sie auftauchen. Dies trifft z.B. auf den Metacharacter\verb!^! zu. Mehr dazu später.
+
+Reguläre Ausrücke sind eine Art eigene Sprache zu der mehrere Dialekte existieren. Je nach Programmiersprache bzw. Programm kann es hier leicht Unterschide in der Syntax sowie in den Möglichieten geben. Eineige Funktionen in \R{}, die reguläre Ausrücke verarbeiten verstehen mehrere Dialekte. So z.B. die Art und Weise, wie regex in Perl bennuitzt werden. Im Folgenden werden wir uns auf den in \R{} genutzten Standarddialekt konzentrieren. 
+
+<<>>=
+text <- c("Erste Zeile dieses Textes.", 
+          "Dies sei die zweite Zeile.")
+grep("Zeile", text)
+@
+
+<<>>=
+grep("Dies", text)
+@  
+
+Der Ausdruck ist so zu lesen. Suche ein großes \texttt{D}, das von einem kleinen \texttt{i}, einem \texttt{e} und \texttt{s} gefolgt wird. Dies trifft nur auf die zweite Zeile zu. In der ersten enthält das Wort \texttt{dieses} eine kleines \texttt{d} und wird somit nicht erfasst.
+
+Um sowohl das große als auch das kleine \emph{d} zu erfassen können sogenannte \emph{character classes} genutzt werden. Eine characer class wird durch eckige Klammern begrenzt, z.B. \texttt{[dD]}. Dies besagt, dass an dieser Stelle im Ausdruck ein großes oder eine kleines d stehen kann. Dies kann folgendemaßen in unseren Ausdruck eingebaut werden, um sowohl die Zeichenkette \texttt{dies} als auch \texttt{Dies} zu erfassen.
+
+<<>>=
+grep("[Dd]ies", text)   
+@       
+
+Während außerhalb einer character class die Regel gilt, dass ein bestimmtes Zeichen \emph{UND} dann das nächste bestimmte Zeichen folgt, sind die Zeichen innerhalb der Klasse mit einem \texttt{ODER} vernüpft. Es kann also das \texttt{D} oder das \texttt{d} folgen. Eine chacter class beschriebt jeweils nur wofür ein Zeichen innerhalb des Ausdrucks dtshen kann, nicht mehrere. 
+
+
+
+\textbf{Anfang und Ende einer Zeichenkette}
+
+Nehmen wir an, wir haben folgende Variablennamen.
+
+<<>>=
+varnames <- c("geschl", "verwend", "gbv", "v1", "v2", "v3")
+@
+
+Wir möchte aus diesen alle Variablen herausfiltern, die mit einen \texttt{v} beginnen. Der Ansatz \texttt{grep("v", varnames)} würde uns hier nicht weiterhelfen, da er den Index aller Variabken ausgibt, die überhaupt den Buchstaben \texttt{v} enthalten.
+@
+
+Um die Position in einer Zeichenkette mit zu berücksichtigen können die Metacharactere \verb!^! (caret) und \verb!$! Dollarzeichen genutzt werden. Sie markieren den Anfang und das Ende der untersuchten Zeichenkette. Nachfolgender Audsruck gibt nur die Indizes der Variablennamen aus, wo direkt nach dem Beginn der zeichenkette (\verb!^!) ein \texttt{v} folgt.
+
+<<>>=
+grep("^v", varnames)
+@
+
+Wir sind jeodch noch nicht ganz zufrieden. Wir möchten nur die Variaben ausgeben, wo auf \texttt{v} eine Zahl folgt. Um dies zu erreichen, können wir angeben, dass nach dem v ein Zeichen zwischen 0 und 9 folgen muss. 
+
+<<>>=
+grep("^v[0123456789]", varnames)
+@ 
+
+Für die Zahlen 0 bis 9 ist die Kurzschreibweise \verb!0-9! erlaubt. Somt kann alternativ auch der Ausdruck \verb!grep("^v[0-9]", varnames)! genutzt werden.
+
+Um das gleiche Ergebnis zu erreiche  hätten wir auch den alternativen Ansatz wählen können nur jene Variablen auszugeben, die als letztes Zeichen eine Zahl entahlten und direkt danach das Emde der Zeichenkette (\verb!$!) folgt 
+
+<<>>= 
+grep("[0-9]$", varnames)
+@
+
+TODO Ausdrücke zu Vereinfachung
+\verb!0-9!
+\verb!A-Z!
+etc.
+
+\textbf{Negatierung von character classes}
+
+Innerhalb von character clasees hat das Zeichen \verb!^! eine andere Bedeutung als außerhalb. Während es außerhalb den Zeilenanfang markiert, bedeutet es als \emph{erstes} Zeichen innerhalb der eckigen Klammer, dass alle nachfolgenden Zeichen \texttt{nicht} erfasst werden. \footnote{Wenn es nicht direkt nach der öffnenenden eckigen Klammer steht hat es jedoch eine andere Bedeutung als die Negierung.} \verb![^0-3]! bedeutet somit, dass nur Zeichen erfasstwerden sollen, die nicht 0 bis 3 sind.
+
+Alzernativ hätte wir somit alle Variablennamen, bei denen auf das \texttt{v} nach dem Zeilenanfang kein Buchstabe (aber z.B. eine Zahl folgt) erfasst.
+
+<<>>=
+grep("^v[^a-z]", varnames)
+@
+
+
+\textbf{Der Punkt - irgendein Zeichen}
+
+Der Punkt ist ein Metacharcter, der für ein belibiges Zeichen steht.
+Angenommen wir hätten alle Variablen finden wollen, bei denen nach Zeilenbeginnn irgendeinem Zeichen beginnen gefolgt von einer Zahl steht. Dies wäre wie folgt möglich.
+
+<<>>=
+grep("^.[0-9]", varnames)
+@
+
+EIne weiteres Beispiel ist eine Datum. Nehmen wir da, ich suche in einem Text das Datum 01.01.2000. Dies könnte auch folgendermaßen geschireben werden: 01/01/2001 oder auch 01-01-2001. Der susdruck könnte demenstprechden Lauten
+
+<<>>=
+dates <- c("01.01.2000", "01/01/2000", "01-01-2000", "01 01 2000")
+grep("01.01.2000", dates)
+@ 
+
+
+\texttt{Das Oder}
+
+Der senkrechte Strich (\verb!|!) ist in \R{} als logisches \texttt{oder} bekannt. Innerhlab von reguären Ausdrücken kann er in ähnloicher Weise genutzt werden. Vorhin haben wir mittels einer character Klasse zwischen den Worten dies und Dies unterschieden. Es ist auch möglich, dies mittels des Metacharacters \verb!|! zu erreichen.
+
+<<>>= 
+d <- c("dies", "Dies")
+grep("[Dd]ies", d)
+grep("Dies|dies", d)
+@ 
+
+In Kombination mit einem weiteren Metacharacter, der runden Klammer, kann die Reichweite des Auswahlbereichs auf diese eingeschränkt werden.
+
+<<>>=
+grep("(D|d)ies", d)
+@
+
+Innerhalb einer character class ist \verb!|! \emph{kein} Metacharcter sondern ein normales Zeichen.
+
+Schueen wir uns noch eine weiteres Beispiel an. Wir haben folegndes Variablennamen unnd wollen alle ausgeben, die mir \texttt{v} oder mit \texttt{var} beginnen und auf die ein Zahl folgt.
+
+<<>>= 
+vars <- c("geschl", "v1", "var4")  
+grep("^(v|var)[0-9]", vars)
+@   
+
+\textbf{Case sensitivity} 
+
+<<>>= 
+vars <- c("geschl", "v1", "var4", "V4", "Var5", "VAR6")  
+grep("^([Vv]|[Vv][Aa][Rr])[0-9]", vars)
+grep("^(v|var)[0-9]", vars, ignore.case=T)
+@
+
+
+\textbf{Begining of word matching}
+
+<<>>=
+vars <- c("var", "covariable", "variable", "no variable")
+grep("var", vars) 
+grep("\\<var\\>", vars)
+grep("\\<var", vars)  
+@
+
+
+\textbf{Optionale Ausdrücke}
+
+\verb!?! zeigt an, dass das vorangehende Zeichen optional ist. Im nachfolgenden Fall wird nach der Zeichenkette \emph{die} gesucht als auch nach \emph{dies}.
+
+<<>>=
+h <- c("die", "dies")
+grep("dies?", h) 
+@
+
+<<>>=
+j <- c("var", "v")
+grep("v(ar)?", j)
+@
+
+<<>>=
+j <- c("July fourth", "Jul 4th")
+grep("(July|Jul) (fourth|4th|4)", j)
+grep("(July?) (fourth|4(th)?)", j)
+@
+
+
+\textbf{quantifiers}
+
+Die Metacharacters Plus \texttt{+} und Sternchen (\texttt{*}) ähneln dem Fragezeichen. Auch sie beziehen sich auf das vorangehende Zeichen. \texttt{+} versucht das vorgehende Zeichen so oft wie möglich, aber mindestens einmal zu matchen. \texttt{*} ist ähnlich. Es matched das vorangehende Zeichen beliebig oft im gegensatz zu \texttt{+} jedoch auch keinmal. Wenn das Zeichen hingegen keinmal auftaucht, so wird \texttt{+} im Gegensatz zu \texttt{*} keinen match finden. 
+
+<<>>=
+s <- c("a", "ab", "abb", "abbb")
+grep("ab+", s)
+grep("ab*", s)
+@
+
+Wenden wir die nun auf den Fall der Variablenauswahl an. Da nicht alle Variablen nur eine Zahl hinter der \texttt{v} aufweisen werden sollen nun mindestens eine aber auch mehrere Zahlen erfasst werden. 
+ 
+<<>>=
+vars <- c("v_geschl", "v1", "v132")
+grep("^v[0-9]+", vars)
+@
+
+Komplizieren wir den Fall nun ein wenig, indem manche Variablennamen mit v andere mit var beginnen und Groß-und Kkleinschreibung austauschbar ist.
+
+<<>>=
+vars <- c("v_geschl", "v1", "v132", "var13", "VAR2", "Var544")
+grep("^v(ar)?[0-9]+", vars, ignore.case=T)
+@
+
+Quantifizierung über Intervalle. Bisher haben wir lediglich die Möglichkeit gehabt keinen oder mehrere vorangehende Zeichen zu matchen. Die geschweifte Klammer gibt die Möglichkeit die Anzahl an zu matchenden Zeichen zu begrenzen.
+Nachfolgenden Beispiel gibt nur jene Variablen aus, bei der dem \texttt{v} mindestens 3 Ziffern folgen.
+<<>>=
+s <- c("v12", "v10000", "v1", "v123")
+grep("^v[0-9]{3,6}", s)
+@
+
+\textbf{Backreferencing}
+
+<<>>=
+s <- c("Wort Wort", "der der Mann")
+grep("\\<([A-Za-z]+) +\\1\\>", s)
+@
+
+NEU: Nehmen wir an, wir haben einen string der Anführungszeichen enthält. Diese werden durch den Escape character gekennzeichnet. Außerdem hat der String am Anfang und Ende Anführungszeichen. Es sollen nun ausschließlich die Anführungszeichen am Anfang und Ende entfernt werden, aber nur, wenn beide vorhanden sind. Eine Lösung liefert die Nutzung einer Backreferenz. Der geundene Ausdruck wird durch jene ersetzt, die innerhlab der runden Klammern stehen. Auf diese bezieht sich die Back-Referenz. Dies sind alle Teile des Satzes außer den Anführrugsstrichen.
+
+<<>>=  
+library(stringr)      
+s <- c("\"He said:\"Hello\" - some word\"", "\"Hello!\" he said")
+r <- str_replace(s, "^\"(.*)\"$", "\\1")
+@
+
+\textbf{Escape Sequenzen}
+Um ein Zeichen zu matchen, dass innerhalb von regulären Ausdrücken ein Metacharcter ist und somit eine besondere Bedeutung hat wird der Backslash als  Escape Anweisung genutzt. Dieser zeigt an, dass das nacholgende Zeichen nicht als Metacharacter sondern als nmormale Zeichen behandelt werden soll. In \R{} ist es noch ein wenig umständlicher, weil der Backlsah selber in Zeichenketten bereits eine Bdertung hat. Aus diesem Grund benötigen wir einen doppelten Backslash.
+
+<<>>=
+s <- c("*.bmp", "*.png")
+grep("\\*", s)  
+
+s <- c("wort\\test", "*.png")
+grep("\\\\", s)
+
+s <- "(Anmerkungen)"
+grep("\\([A-Za-z]+\\)", s)
+@
+
+Wortanfang alternative: \verb!\\b!.
+<<>>=
+l <- c("dies", "das", "und so")
+grep("\\bd", l)
+@
+ 
+\emph{Subexpression}: Eine Subexpression ist eine eiabgeschlossene Einheit eines größerene Ausdrucks. Z.B die linke und rechte Seite von einer Auswahl \texttt{1-3|7-9} oder ein Bereich innerhalb einer runden Klammer \texttt{A-Z{1,1}(a-z)*}. Quantifiers beziehen sich immer auf die komplette vorangehende Subexpression. Wenn also eine Quatifier auf ein Klammer folgt, so bezieht diese sich auf den gesamten Ausdruck in der Klammer \texttt{(D|d)+}.
+
+
+
+\textbf{Übersicht}
+
+Tabelle \ref{tab:regex} gibt einen Überblich über die bisher verwendetetn Elemente von regulären Ausdrücken.
+
+\begin{table}[htb]
+  \centering
+  \caption[]{Regex}
+  \label{tab:regex}
+\begin{scriptsize}
+\begin{tabular}{p{2cm}p{3.5cm}p{8cm}}
+\hline
+Metacharacter & Beschreibung & Matches\\
+\hline
+\verb!.!      & Punkt & Ein beliebiges Zeichen \\
+\verb![   ]!  & character class & Irgendein ein Zeichen aus der Klasse \\  
+\verb![^  ]!  & negierte character class & Irgendein ein Zeichen außer jene in der Klassen \\
+\verb!^!      & caret & Steht für den Zeilenanfang \\
+\verb!$!      & Dollarzeichen & Steht für das Zeilenende \\
+\verb!|!      & Senkrechter Strich & Auswahl: Einer der Ausdrücke links oder rechts wird gematched \\                       
+\verb!(  )!   & Runde Klammern Strich & Bisher: Gültigkeitsberech für \verb! |! definieren \\  
+\verb!\<!    & Backslash, kleiner & Anfang eines Wortes. Achtung: in \R{} wird ein zweiter Backslash vorangestellt. \\  
+\verb!\>!    & Backslash, größer & Ende eines Wortes. Achtung: in \R{} wird ein zweiter Backslash vorangestellt. \\  
+\hline
+\end{tabular}
+\end{scriptsize}
+\end{table}
+
+TABELLE FRIEDL 1.5.6
+
+\section{Beispiel}
+
+Enthält eine Zeichenkette nur Zahlen?
+
+<<>>=
+library(stringr)
+@              
+
+<<>>=
+s <- c("123", "A123", "123A")
+str_extract_all(s, "^[0-9]+$")
+@             
+
+<<>>=
+s <- c("1.15", ".12", "123")
+str_extract_all(s, "^[-+]?[0-9]*(\\.[0-9]*)?")
+@
+
+<<>>=
+s <- c("10.00 Euro", "10Euro", "10 €")
+str_extract_all(s, "^[0-9]*(\\.[0-9]*)?")
+str_match(s, "(^[0-9]*(\\.[0-9]*)?).(Euro|€)")
+@
+
+<<>>=
+s <- c("A111", "A123", "A1")
+str_extract_all(s, "^[A-Z][0-9]+")
+str_extract_all(s, "^[A-Z][0-9]+?")     # non-greedy
+str_extract_all(s, "^[A-Z][0-9]{2, }?") 
+@   
+
+Text mit Klammern
+
+<<>>=
+s <- "ein (Test innerhalb) und (so)"
+str_extract_all(s, "\\([^)]*\\)") 
+@  
+
+
+Regex group capture   
+
+Wir haben bereits gesehen, dass auf vorherige Teilausdrücke zugegriffen werde konnte. in Sprachem wie z.B. Perl ist es möglich über eine externe Variable auf die einzelne Gruppen des Ausdrucks zuzugreifen. In \R{} ist dies z.B. mit der Funktion \verb!str_match! aus dem \texttt{stringr} Paket möglich. Diese liefert eine Matrix zurück, bei der die erste Spalte das Ergebnis des kompletten Ausdrucks enthält. Die üpbrigen Splaten enthalten sukzessiv die Ergebnisse der Teilausdrücke.
+
+<<>>=
+s <- c("(v1 = 0.123)", "(v2 = 0.444)")
+str_match(s, "\\((.*?) = (0\\.[0-9]+)\\)")
+@  
+
+Nehmen wir an es liegen Währungsangaben vor. Diese können Nachkommastellen aufweisen und haben eine Währungsangabe hinter der. Folgende Varinate und entsprechden Kombinationen sind denkbar: 10 Euro, 10.00 Euro, 10 Eurozeichen.
+
+<<>>=
+s <- c("10.99", "10.00 Euro", "10  Euro", "10 €", "9.99 €")
+str_match(s, "(^[0-9]+(\\.[0-9]*)?) *(Euro|€)?")
+@
+
+Tabulatoren: Nehmen wir an, wir wollen zwischen der Zahl und der währungsangabe auf einen Tabulatior zulassen. Der Tabulator ist als Metacharater über den Backslash als \verb!\t! definiert. Durch den Zusatz \verb![ \t]*! können als Trennzeichen nun ein oder mehrere Leerzeichen oder Tabulatoren oder auch in Kombination verwendet werden. 
+
+<<>>=
+s <- c("10.00\tEuro", "9.99 \t€")
+cat(s) 
+str_match(s, "(^[0-9]+(\\.[0-9]*)?)[ \t]*(Euro|€)?")
+@
+
+Eine Alternative ist der Metacharcter für einen belibigen Whitespace Chacarter \verb!\s!. hierzu zählt der Tabulator, das Leerzeichen, eine neue Zeile und Carriage return. Achtung: Innerhalb einer character class wird dies nicht funktionieren.
+
+<<>>=
+str_match(s, "(^[0-9]+(\\.[0-9]*)?)\\s*(Euro|€)?")
+@
+
+Wenn eine Klammer nicht gecaptured werden soll wird dazu in Perl die Sequenz \verb!(?:   )! genutzt. In \R{} hat dies zunächst keine Bedeutung da kein Capturing stattfindet. nur die Funktion \verb!str_match! berücksichtigt dies. Nachfolgend eine leicht modifizierte Variante, die nur die wichtisgsten Gruppen auswertet. Verwirrend ist hierbei, dass das Fragezeichen etwas anderes bedutet als sonnst. Hier hat die ganze Sequenz \verb!(?:! \emph{eine} Bedeutung. Dies macht den Code jedoch schwerer lesbar, so dass man stets überlegen muss, ob die Vorteile überwiegen.
+
+<<>>=
+s <- c("10.99", "10.00 Euro", "10  Euro", "10 €", "9.99 €")
+str_match(s, "(^[0-9]+(?:\\.[0-9]*)?) *(Euro|€)?")
+@        
+
+
+<<>>=
+s <- c("123", "12AB")
+str_extract(s, "\\d*")
+@
+
+Das Paket \texttt{gsubfn} erlaubt nicht nur einfache Ersetzungen sondern auch Funtkionen zu nutzen. Hierbei werden die 
+
+\section{Ersetzungen}
+
+Anonymisieren 
+
+<<>>=
+s <- c("Mark Heckmann", "Markus Heckmann", "Jan Pries")
+str_replace(s, "(Heckmann|Pries)", "xxx")
+str_replace(s, "(Mark|Jan) (Heckmann|Pries)", "\\1 xxx") 
+str_replace(s, "\\<(Mark|Jan)\\> \\<(Heckmann|Pries)\\>", "\\1 xxx") 
+@
+
+Auf zwei bzw. drei Nachkommastellen abschneiden, je nachdem, ob die dritte Ziffer eine Null oder keine Null ist.
+
+<<>>=
+s <- c(1.25, 1.257, 1.257134)
+str_replace(s, "(\\.\\d\\d[1-9]?)\\d*", "\\1")
+@
+
+<<>>=
+library(gsubfn)
+s <- c("12", "(13, 14)") 
+gsubfn("[0-9]+", function(x) as.numeric(x) + 1, s) 
+@
+
+Nehmen wir an wir wollen an die Namen Mark und Jan jeweils eine 1 dranhängen.
+
+<<>>=
+s <- c("der Hermann", "der Jan", "der Mark")
+str_replace(s, "(Mark|Jan)", "\\11")   # oder
+gsubfn("(Mark|Jan)", function(x) paste(x, 1, sep=""), s)
+@   
+
+Adding text of the beginning of lineby replacing \verb!^! with some content.
+<<>>=
+s <- c("some text")
+str_replace(s, "^", "added ")
+@ 
+
+Nehmen wir an wir wollen alle Zitate, die in Klammermn stehen aus einem Text herausfiltern.
+
+<<>>=
+s <- c("Dies war bereits angelegt (Hauser, 1999, S.123). Auch hier (Heckmann, 2012, S.23)") 
+str_match_all(s, "\\(([^()]*)\\)")[[1]][, 2]
+@
+
+\textbf{Lookaround}
+
+Eine Lookaraound ist ein relativ neues Regex Feature.
+Nehmen wir an, wir möchten in längere Zahlen die keine Punkte zur Tausendertrennung enthalten Punkte einsetzen.  
+
+Lookahead wird durch folgende Sequenz aufgerufen: \verb!(?=   )!
+Lookbehind Sequenz: \verb!(?<=   )!
+
+Lokkarounds matchen nur Positionen, d.h. sie geben ein Position zurück.
+
+Lookaaround sind nicht in der Standardart implementiert sondern nur im Perl Dialekt.
+<<>>=
+s <- c("Mark Heckmann")
+str_replace(s, perl("(?=Heckmann)"), "A. ")
+@
+
+Aus Heckmann wird Beckmann.
+<<>>=
+s <- c("Mark Heckmann")
+str_replace(s, perl("(?=Heckmann)H"), "B")
+@
+
+Nachfolgendes Lookahead (dritte Zeile) führt dazu, dass die regex nicht füdig wird wenn auf das Wort \texttt{Mark} kein \texttt{s} folgt. 
+<<>>=
+s <- "Marks Auto"
+str_replace(s, "Marks", "Mark's")
+str_replace(s, "\\<Marks\\>", "Mark's")       # mit word boundaries
+str_replace(s, perl("\\bMark(?=s\\b)"), "Mark'")    # mit Lookahead
+@
+ 
+In einer Kombination aus Lookbehind und Lookahead liefert uns die geneua Position hinter dem wort Mark.
+
+<<>>=
+s <- "Marks Auto"
+str_replace(s, perl("(?<=\\bMark)(?=s\\b)"), "'")
+@   
+
+Punkte einfügen um Tausenderstellen zu trennen.
+
+<<>>=
+s <- c("12344567788")
+# (?<=\\d)        # links sthet eine Zahl
+# (\\d\\d\\d)+$   # mehrmals drei Zahlen und das dann das Ende 
+gsub("(?<=\\d)(?=(\\d\\d\\d)+$)", "\\.", s, perl=T)
+str_replace_all(s, perl("(?<=\\d)(?=(\\d\\d\\d)+$)"), "\\.")
+@
+
+
+Dieser Ansatz funktioniert nicht innerhalb einer Zeichenkette, da das Dollarzeichen am Schluss das Ende des Strings benötigt. Lösung eine Word-Boundary nutzen.
+
+<<>>=
+s <- c("Eine 12344567788 Zahl")
+gsub("(?<=\\d)(?=(\\d\\d\\d)+\\b)", "\\.", s, perl=T)
+@
+
+Lösung ohne Lookbehind:
+
+<<>>=
+gsubfn("(\\d)(?=(\\d\\d\\d)+(?!\\d))", function(x, ...) 
+  paste(x, ".", sep=""), s, perl=T)
+@
+
+Negative Lookaheads \verb,(?<!  ), und Lookbehinds \verb,(?!  ),
+
+Anfang eines Wortes
+
+Text innerhalb von Klammern extrahieren.
+
+<<>>=
+s <- c("im Jahr (2001) war was", "in (der Klammer) test")
+str_extract(s, perl("(?<=\\().*(?=\\))"))
+
+@
+
+<<>>=  
+s <- "einige Worte in Folge"
+str_replace_all(s, perl("(?<!\\w)(?=\\w)"), "*")
+@  
+          
+Ende eines Wortes
+
+<<>>=  
+s <- "einige Worte in Folge"
+str_replace_all(s, perl("(?<=\\w)(?!\\w)"), "*")
+@
+
+
+\section{Beispiele}
+
+Einen string zwischen Zahl und Buchstabe splitten mit Lookbehind und Lookahead.
+
+<<>>=    
+s <- c("V123", "v12")
+strsplit(s, "(?<=[A-Za-z])(?=\\d+)", perl=T)
+@      
+
+\end{document}
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
