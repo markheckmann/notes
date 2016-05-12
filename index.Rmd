@@ -20,6 +20,7 @@ All the source code to produce the notes can be found in one of the folders of t
     + [Cross Validation](./cross_validation.html)
     + [Regression: Testing custom hypothesis](./regression_custom_hypotheses.html)
     + [Regression: Partielle Regressionskoeffizienten](./regression_partiell.html)
+    + [Wallenius' multivariate hypergeometrical distribution](./wallenius-distribution.html)
 
 * Methods 
     + [Thurstone Skalierung](./scaling_thurstone.html)
