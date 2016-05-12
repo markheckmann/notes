@@ -1,0 +1,97 @@
+---
+title: "Wallenius' noncentral multivariate hypergeometrical distribution"
+output: html_document
+---
+
+## Biased sampling
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment=NA)
+```
+
+Today I needed to better understand what the resulting distribution is, when sampling without replacement using the R `sample` function, where each element exists exactly once and has a different weight of being drawn. Let $M$ be the total number of elements (i.e. colors when using urn terminology) and $N$ the number of elements sampled from $M$, and $P$ a vector of weights. Repeatedly sampling $N=2$ out of $M=4$ with $P=[4,3,2,1]$ gives the mean occurence of each element in the sample.
+
+```{r}
+N <- 2
+M <- 4
+P <- M:1
+reps <- 1e4
+v <- replicate(reps, sample(1:M, size=N, replace=FALSE, prob=P))
+tbl <- table(unlist(v))
+tbl / reps
+```
+
+The distribution that models this setting is [Wallenius' noncentral multivariate hypergeometrical distribution (WNMHD)](https://en.wikipedia.org/wiki/Wallenius%27_noncentral_hypergeometric_distribution). Conceptually, it is the same as the multivariate hypergeometrical distribution except for that the elements additionally have weights. The probability for a certain result can be calculated using the corresponding density function from the package `BiasedUrn`. For example, drawing the elements ${1,3}$ for the same parameters as above yields the probability
+
+```{r}
+library(BiasedUrn)
+dMWNCHypergeo(x = c(1,0,1,0), m = rep(1, M), n=N, odds=P)
+```
+
+Repeating this process for every possible outcome for a given $M$ and $N$, we can calculate the distribution of means for the WNMHD.
+
+```{r}
+# approach one: calculate all combinations
+l <- replicate(M, 0:1, simplify = F)  # all combinations 
+d <- t(as.matrix(expand.grid(l)))     # generate all combinations
+d <- d[ , colSums(d) == N]            # columns with N elements drawn
+p <- dMWNCHypergeo(x = d, m = rep(1, M), n=N, odds=P)  # get density
+mu <- as.vector(d %*% cbind(p))       # calculating mean
+mu 
+```
+
+Using this brute force approach quickly runs into trouble when $M$ gets large. The calculation of all possible combinations will quickly fail due to memory limits. A better way to calculate the means is to use function `meanMWNCHypergeo`. Settings the `precision` argument to a small value will yield an exact solution.
+
+```{r}
+mu2 <- meanMWNCHypergeo(m = rep(1, M), n=N, odds = P, precision = .0)
+mu2
+```
+
+Additionally, the function also allows to estimate the means with reduced precision for high values of $M$ and $N$. By this one can evade the trouble caused by the brute force approach above.
+
+```{r}
+M <- 20
+N <- 10
+P <- M:1
+mu2 <- meanMWNCHypergeo(m = rep(1, M), n=N, odds = P, precision = .1)
+mu2
+```
+
+
+
+## Two stage sampling strategy
+
+Using this knowledge, we can calculate the resulting distribution for a sampling strategy applied in my research. In my setting, $N$ is not fixed but is also a random variable used as a hyper-parameter in the second sampling stage using WNMHD as described above. As all draws are indendent, the expected means of the compound distribution can simply be calculated as a weighted sum of the estimated WNMHD means for every possible realization of $N$. Let the distribution for the random variable $N$ be  
+
+```{r}
+P1 <- c("1" = .25, "2"=.5, "3"=.25) 
+P1
+```
+
+Calculating the weighted sum of estimated WNMHD means for each N gives.
+
+```{r}
+# stage 2 sampling
+M <- 4
+P <- M:1
+MU <- mapply(meanMWNCHypergeo, n=1:3, 
+            MoreArgs = list(m = rep(1, M), odds = P, precision = 0))
+MU <- t(MU)
+P1 %*% MU
+```
+
+To see if the results are correct let's try it again using a simulation.
+
+```{r}
+# stage 1 sampling
+reps <- 1e5
+N1 <- sample(1:3, reps, replace=T, prob=P1)
+
+v <- lapply(N1, function(x)  {
+  sample(1:M, size=x, replace=FALSE, prob=P)
+})
+tbl <- table(unlist(v))
+tbl / reps
+```
+
+The results are almost identical. As the WNMHD means are estimated and thus only approximately correct, we cannot expect identity of the results even for many replications. 
