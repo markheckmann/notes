@@ -1,6 +1,11 @@
 ---
 title: "Wallenius' noncentral multivariate hypergeometrical distribution"
-output: html_document
+author: Mark Heckmann
+output: 
+  html_document:
+    theme: united
+    toc: yes
+    toc_depth: 3
 ---
 
 ## Biased sampling
