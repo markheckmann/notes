@@ -1,1 +1,1 @@
-The notes can be found under https://github.com/markheckmann/notes
+The notes can be found on github pages: https://markheckmann.github.io/notes
