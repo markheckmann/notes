@@ -1,33 +1,42 @@
----
-title: "Populating data frame cells with more than one value"
-author: Mark Heckmann
-output: 
-  html_document:
-    theme: united
-    toc: yes
-    toc_depth: 3
-    keep_md: true
----
+# Populating data frame cells with more than one value
+Mark Heckmann  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, comment=NA)
-```
+
 
 
 ## Data frames are lists
 
 Most R users will know that data frames are lists. You can easily verify that a data frame is a list by typing
 
-```{r}
+
+```r
 d <- data.frame(id=1:2, name=c("Jon", "Mark"))
 d
+```
+
+```
+  id name
+1  1  Jon
+2  2 Mark
+```
+
+```r
 is.list(d)
+```
+
+```
+[1] TRUE
 ```
 
 However, data frames are lists with some special properties. For example, all entries in the list must have the same length (here 2), etc. You can find a nice description of the differences between lists and data frames [here](http://stackoverflow.com/questions/15901224/what-is-difference-between-dataframe-and-list-in-r). Accessing the first column of `d`, we find that it contains a vector (and a factor in case of column `name`). Note, that `[[ ]]` is an operator to select a list element. As data frames are lists, they will work here as well.
 
-```{r}
+
+```r
 is.vector(d[[1]])
+```
+
+```
+[1] TRUE
 ```
 
 
@@ -35,14 +44,22 @@ is.vector(d[[1]])
 
 A long time, I was unaware of the fact, that data frames may also contain lists as columns instead of vectors. For example, let's assume Jon's children are *Mary* and *James*, and Mark's children are called *Greta* and *Sally*. Their names are stored in a list with two elements. We can add them to the data frame like this:
 
-```{r}
+
+```r
 d$children <- list(c("Mary", "James"), c("Greta", "Sally"))
 d
 ```
 
+```
+  id name     children
+1  1  Jon  Mary, James
+2  2 Mark Greta, Sally
+```
+
 A single data frame entry in column `children` now contains more than one value. Given that the column is a list, not a vector,  we cannot go as usual when modifying an entry of the column. For example, to change Jon's children, we cannot do
 
-```{r eval=FALSE}
+
+```r
 > d[1 , "children"] <- c("Mary", "James", "Thomas")
 
 Error in `[<-.data.frame`(`*tmp*`, 1, "children", value = c("Mary", "James",  : 
@@ -51,7 +68,8 @@ Error in `[<-.data.frame`(`*tmp*`, 1, "children", value = c("Mary", "James",  :
 
 Taking into account the list structure of the column, we can type the following to change the values in a single cell.
 
-```{r}
+
+```r
 d[1 , "children"][[1]] <- list(c("Mary", "James", "Thomas"))
 
 # or also
@@ -60,9 +78,16 @@ d$children[1] <- list(c("Mary", "James", "Thomas"))
 d
 ```
 
+```
+  id name            children
+1  1  Jon Mary, James, Thomas
+2  2 Mark        Greta, Sally
+```
+
 You can also create a data frame having a list as a column using the `data.frame` function, but with a little tweak. The list column has to be wrapped inside the function `I`. This will protect it from several conversions taking place in `data.frame` (see `?I` documentation).
 
-```{r}
+
+```r
 d <- data.frame(id = 1:2, 
                 name = c("Jon", "Mark"),
                 children = I(list(c("Mary", "James"), 
@@ -77,16 +102,32 @@ This is an interesting feature, which gives me a deeper understanding of what a 
 
 I had two separate types of information. One stored in a data frame and the other one in a list Referring to the example above, I had
 
-```{r}
+
+```r
 d <- data.frame(id=1:2, name=c("Jon", "Mark"))
 d
 ```
 
+```
+  id name
+1  1  Jon
+2  2 Mark
+```
+
 and 
 
-```{r}
+
+```r
 ch <- list(c("Mary", "James"), c("Greta", "Sally"))
 ch
+```
+
+```
+[[1]]
+[1] "Mary"  "James"
+
+[[2]]
+[1] "Greta" "Sally"
 ```
 
 I needed to return an array of JSON objects which look like this.
@@ -108,7 +149,8 @@ I needed to return an array of JSON objects which look like this.
 
 Working with the superb `jsonlite` package to convert R to JSON, I could do the following to get the result above.
 
-```{r message=FALSE, warning=FALSE, results="hide"}
+
+```r
 library(jsonlite)
 
 l <- split(d, seq(nrow(d)))             # convert data frame rows to list
@@ -121,9 +163,25 @@ toJSON(l, pretty=T, auto_unbox = T)     # convert to JSON
 
 The results are correct, but getting there involved quite a number of tedious steps. These can be avoided by directly placing the list into a column of the data frame. Then `jsonlite::toJSON` takes care of the rest.
 
-```{r}
+
+```r
 d$children <- list(c("Mary", "James"), c("Greta", "Sally"))
 toJSON(d, pretty=T, auto_unbox = T)
+```
+
+```
+[
+  {
+    "id": 1,
+    "name": "Jon",
+    "children": ["Mary", "James"]
+  },
+  {
+    "id": 2,
+    "name": "Mark",
+    "children": ["Greta", "Sally"]
+  }
+] 
 ```
 
 Nice :) What we do here, is basically creating the same nested list structure as above, only now it is disguised as a data frame. However, this approach is much more convenient.

@@ -123,7 +123,8 @@ $(document).ready(function () {
 <div id="TOC">
 <ul>
 <li><a href="#data-frames-are-lists">Data frames are lists</a></li>
-<li><a href="#dealing-with-json-structures">Dealing with JSON structures</a></li>
+<li><a href="#data-frame-columns-may-contain-lists">Data frame columns may contain lists</a></li>
+<li><a href="#converting-lists-and-data-frames-to-json">Converting lists and data frames to JSON</a></li>
 </ul>
 </div>
 
@@ -137,21 +138,24 @@ d</code></pre>
 2  2 Mark</code></pre>
 <pre class="r"><code>is.list(d)</code></pre>
 <pre><code>[1] TRUE</code></pre>
-<p>However, data frames are lists with some special properties. For example, all entries in the list must have the same length (here 2), etc. You can find a nice description of the differences between lists and dataframes <a href="http://stackoverflow.com/questions/15901224/what-is-difference-between-dataframe-and-list-in-r">here</a>. Accessing the first column of <code>d</code>, we find that it contains a vector (and a factor in case of column <code>name</code>). Note, that <code>[[ ]]</code> is an operator to select a list element. As data frames are lists, they will work here as well.</p>
+<p>However, data frames are lists with some special properties. For example, all entries in the list must have the same length (here 2), etc. You can find a nice description of the differences between lists and data frames <a href="http://stackoverflow.com/questions/15901224/what-is-difference-between-dataframe-and-list-in-r">here</a>. Accessing the first column of <code>d</code>, we find that it contains a vector (and a factor in case of column <code>name</code>). Note, that <code>[[ ]]</code> is an operator to select a list element. As data frames are lists, they will work here as well.</p>
 <pre class="r"><code>is.vector(d[[1]])</code></pre>
 <pre><code>[1] TRUE</code></pre>
-<p>A long time I was unaware of the fact, that data frames may also contain lists instead of vectors. For example, let’s assume Jon’s children are <em>Mary</em> and <em>James</em>, and Mark’s children are called <em>Greta</em> and <em>Sally</em>. We can add them like this:</p>
+</div>
+<div id="data-frame-columns-may-contain-lists" class="section level2">
+<h2>Data frame columns may contain lists</h2>
+<p>A long time, I was unaware of the fact, that data frames may also contain lists as columns instead of vectors. For example, let’s assume Jon’s children are <em>Mary</em> and <em>James</em>, and Mark’s children are called <em>Greta</em> and <em>Sally</em>. Their names are stored in a list with two elements. We can add them to the data frame like this:</p>
 <pre class="r"><code>d$children &lt;- list(c(&quot;Mary&quot;, &quot;James&quot;), c(&quot;Greta&quot;, &quot;Sally&quot;))
 d</code></pre>
 <pre><code>  id name     children
 1  1  Jon  Mary, James
 2  2 Mark Greta, Sally</code></pre>
-<p>A single data frame entry in column <code>children</code> now contains more than one value. To modify the entry for Jon and add an additional child, we cannot go as usual, i.e.</p>
+<p>A single data frame entry in column <code>children</code> now contains more than one value. Given that the column is a list, not a vector, we cannot go as usual when modifying an entry of the column. For example, to change Jon’s children, we cannot do</p>
 <pre class="r"><code>&gt; d[1 , &quot;children&quot;] &lt;- c(&quot;Mary&quot;, &quot;James&quot;, &quot;Thomas&quot;)
 
 Error in `[&lt;-.data.frame`(`*tmp*`, 1, &quot;children&quot;, value = c(&quot;Mary&quot;, &quot;James&quot;,  : 
   replacement has 3 rows, data has 1</code></pre>
-<p>To change the values in a single cell, you can do the following.</p>
+<p>Taking into account the list structure of the column, we can type the following to change the values in a single cell.</p>
 <pre class="r"><code>d[1 , &quot;children&quot;][[1]] &lt;- list(c(&quot;Mary&quot;, &quot;James&quot;, &quot;Thomas&quot;))
 
 # or also
@@ -161,17 +165,17 @@ d</code></pre>
 <pre><code>  id name            children
 1  1  Jon Mary, James, Thomas
 2  2 Mark        Greta, Sally</code></pre>
-<p>You can also create a data frame having with a list as a column using the <code>data.frame</code> function with a little tweak. The list has to be wrapped inside the function <code>I</code>. This will protect it from several conversions taking place in <code>data.frame</code> (see <code>?I</code> documentation).</p>
+<p>You can also create a data frame having a list as a column using the <code>data.frame</code> function, but with a little tweak. The list column has to be wrapped inside the function <code>I</code>. This will protect it from several conversions taking place in <code>data.frame</code> (see <code>?I</code> documentation).</p>
 <pre class="r"><code>d &lt;- data.frame(id = 1:2, 
                 name = c(&quot;Jon&quot;, &quot;Mark&quot;),
                 children = I(list(c(&quot;Mary&quot;, &quot;James&quot;), 
                                   c(&quot;Greta&quot;, &quot;Sally&quot;)))
                 )</code></pre>
-<p>This is an interesting feature giving me a deeper understanding of what a data frame is, but when exactly would I want to use it? I have not encountered the need to use it very often yet (though of course there may be plenty of situtions where it makes sense). But today I had a case where this feature seemed particular useful.</p>
+<p>This is an interesting feature, which gives me a deeper understanding of what a data frame is. But when exactly would I want to use it? I have not encountered the need to use it very often yet (though of course there may be plenty of situations where it makes sense). But today I had a case where this feature seemed particularly useful.</p>
 </div>
-<div id="dealing-with-json-structures" class="section level2">
-<h2>Dealing with JSON structures</h2>
-<p>I had two seperate types of information, one stored in a dataframe and te other one in a list Referring to the exampe above, I had</p>
+<div id="converting-lists-and-data-frames-to-json" class="section level2">
+<h2>Converting lists and data frames to JSON</h2>
+<p>I had two separate types of information. One stored in a data frame and the other one in a list Referring to the example above, I had</p>
 <pre class="r"><code>d &lt;- data.frame(id=1:2, name=c(&quot;Jon&quot;, &quot;Mark&quot;))
 d</code></pre>
 <pre><code>  id name
@@ -198,7 +202,7 @@ ch</code></pre>
     &quot;children&quot;: [&quot;Greta&quot;, &quot;Sally&quot;]
   }
 ] </code></pre>
-<p>Working with the superb <code>jsonlite</code> package to convert R to JSON, I could do the following.</p>
+<p>Working with the superb <code>jsonlite</code> package to convert R to JSON, I could do the following to get the result above.</p>
 <pre class="r"><code>library(jsonlite)
 
 l &lt;- split(d, seq(nrow(d)))             # convert data frame rows to list
@@ -207,19 +211,7 @@ for (i in seq_along(l))                 # add element from ch to list
   l[[i]] &lt;- c(l[[i]], children=ch[i])
 
 toJSON(l, pretty=T, auto_unbox = T)     # convert to JSON</code></pre>
-<pre><code>[
-  {
-    &quot;id&quot;: 1,
-    &quot;name&quot;: &quot;Jon&quot;,
-    &quot;children&quot;: [&quot;Mary&quot;, &quot;James&quot;]
-  },
-  {
-    &quot;id&quot;: 2,
-    &quot;name&quot;: &quot;Mark&quot;,
-    &quot;children&quot;: [&quot;Greta&quot;, &quot;Sally&quot;]
-  }
-] </code></pre>
-<p>The results are okay, but all these tedious steps can be avoided by directly placing the list into a column of the data frame. Then <code>jsonlite::toJSON</code> takes care of the rest.</p>
+<p>The results are correct, but getting there involved quite a number of tedious steps. These can be avoided by directly placing the list into a column of the data frame. Then <code>jsonlite::toJSON</code> takes care of the rest.</p>
 <pre class="r"><code>d$children &lt;- list(c(&quot;Mary&quot;, &quot;James&quot;), c(&quot;Greta&quot;, &quot;Sally&quot;))
 toJSON(d, pretty=T, auto_unbox = T)</code></pre>
 <pre><code>[
@@ -234,7 +226,7 @@ toJSON(d, pretty=T, auto_unbox = T)</code></pre>
     &quot;children&quot;: [&quot;Greta&quot;, &quot;Sally&quot;]
   }
 ] </code></pre>
-<p>Nice :)</p>
+<p>Nice :) What we do here, is basically creating the same nested list structure as above, only now it is disguised as a data frame. However, this approach is much more convenient.</p>
 </div>
 
 
