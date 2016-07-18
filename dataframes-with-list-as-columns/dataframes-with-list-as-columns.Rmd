@@ -1,0 +1,126 @@
+---
+title: "Populating data frame cells with more than one value"
+author: Mark Heckmann
+output: 
+  html_document:
+    theme: united
+    toc: yes
+    toc_depth: 3
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment=NA)
+```
+
+
+## Data frames are lists
+
+Most R users will know that data frames are lists. You can easily verify that a data frame is a list by typing
+
+```{r}
+d <- data.frame(id=1:2, name=c("Jon", "Mark"))
+d
+is.list(d)
+```
+
+However, data frames are lists with some special properties. For example, all entries in the list must have the same length (here 2), etc. You can find a nice description of the differences between lists and dataframes [here](http://stackoverflow.com/questions/15901224/what-is-difference-between-dataframe-and-list-in-r). Accessing the first column of `d`, we find that it contains a vector (and a factor in case of column `name`). Note, that `[[ ]]` is an operator to select a list element. As data frames are lists, they will work here as well.
+
+```{r}
+is.vector(d[[1]])
+```
+
+A long time I was unaware of the fact, that data frames may also contain lists instead of vectors. For example, let's assume Jon's children are *Mary* and *James*, and Mark's children are called *Greta* and *Sally*. We can add them like this:
+
+```{r}
+d$children <- list(c("Mary", "James"), c("Greta", "Sally"))
+d
+```
+
+A single data frame entry in column `children` now contains more than one value. To modify the entry for Jon and add an additional child, we cannot go as usual, i.e.
+
+```{r eval=FALSE}
+> d[1 , "children"] <- c("Mary", "James", "Thomas")
+
+Error in `[<-.data.frame`(`*tmp*`, 1, "children", value = c("Mary", "James",  : 
+  replacement has 3 rows, data has 1
+```
+
+To change the values in a single cell, you can do the following.
+
+```{r}
+d[1 , "children"][[1]] <- list(c("Mary", "James", "Thomas"))
+
+# or also
+
+d$children[1] <- list(c("Mary", "James", "Thomas"))
+d
+```
+
+You can also create a data frame having with a list as a column using the `data.frame` function with a little tweak. The list has to be wrapped inside the function `I`. This will protect it from several conversions taking place in `data.frame` (see `?I` documentation).
+
+```{r}
+d <- data.frame(id = 1:2, 
+                name = c("Jon", "Mark"),
+                children = I(list(c("Mary", "James"), 
+                                  c("Greta", "Sally")))
+                )
+```
+
+This is an interesting feature giving me a deeper understanding of what a data frame is, but when exactly would I want to use it? I have not encountered the need to use it very often yet (though of course there may be plenty of situtions where it makes sense). But today I had a case where this feature seemed particular useful.
+
+
+## Dealing with JSON structures
+
+I had two seperate types of information, one stored in a dataframe and te other one in a list Referring to the exampe above, I had
+
+```{r}
+d <- data.frame(id=1:2, name=c("Jon", "Mark"))
+d
+```
+
+and 
+
+```{r}
+ch <- list(c("Mary", "James"), c("Greta", "Sally"))
+ch
+```
+
+I needed to return an array of JSON objects which look like this.
+
+```
+[
+  {
+    "id": 1,
+    "name": "Jon",
+    "children": ["Mary", "James"]
+  },
+  {
+    "id": 2,
+    "name": "Mark",
+    "children": ["Greta", "Sally"]
+  }
+] 
+```
+
+Working with the superb `jsonlite` package to convert R to JSON, I could do the following.
+
+```{r message=FALSE, warning=FALSE}
+library(jsonlite)
+
+l <- split(d, seq(nrow(d)))             # convert data frame rows to list
+l <- unname(l)                          # remove list names
+for (i in seq_along(l))                 # add element from ch to list
+  l[[i]] <- c(l[[i]], children=ch[i])
+
+toJSON(l, pretty=T, auto_unbox = T)     # convert to JSON
+```
+
+The results are okay, but all these tedious steps can be avoided by directly placing the list into a column of the data frame. Then `jsonlite::toJSON` takes care of the rest.
+
+```{r}
+d$children <- list(c("Mary", "James"), c("Greta", "Sally"))
+toJSON(d, pretty=T, auto_unbox = T)
+```
+
+Nice :)
+
