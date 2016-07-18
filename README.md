@@ -1,0 +1,1 @@
+The notes can be found under https://github.com/markheckmann/notes
