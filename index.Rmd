@@ -15,6 +15,7 @@ All the source code to produce the notes can be found in one of the folders of t
     + [Funktionen programmieren](./r_funktionen_programmieren/funktionen_programmieren.pdf)
     + [Simulationen mit R (basics)](./simulation_basics/2012_simulation_reworked.pdf)
     + [PNG pictograms in R base plots](./colorize_png_pictograms.html)
+    + [Data frames with lists as columns](./dataframes-with-list-as-columns.html)
         
 * Stats
     + [Cross Validation](./cross_validation.html)
